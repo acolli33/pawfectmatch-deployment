@@ -86,7 +86,7 @@ export default function MainMenu() {
 
         {/* Footer */}
         <p style={{ textAlign: 'center', fontSize: '12px', color: '#999', marginTop: '30px' }}>
-          CS Capstone Project - Animal Adoption Innovation
+          CS Capstone Project - Animal Adoption Matchmaker
         </p>
       </div>
     </div>
