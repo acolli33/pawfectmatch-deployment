@@ -16,7 +16,7 @@ body {
 }
 
 .left {
-    background: #f5f5f5;
+    background: #f0f4f8;
 }
 
 .right {
@@ -24,7 +24,7 @@ body {
 }
 
 h1 {
-    color: #ff6f61;
+    color: #2563eb;
 }
 
 ul {
@@ -47,11 +47,12 @@ ul {
 }
 
 .card:hover {
-    background: #f0f0f0;
+    background: #e0f2fe;
+    border-color: #93c5fd;
 }
 
 button {
-    background-color: #ff6f61;
+    background-color: #2563eb;
     color: white;
     border: none;
     padding: 8px 12px;
@@ -61,7 +62,7 @@ button {
 }
 
 button:hover {
-    background-color: #ff826f;
+    background-color: #1d4ed8;
 }
 
 .auth-tabs {
@@ -73,10 +74,12 @@ button:hover {
 .auth-tabs button {
     flex: 1;
     padding: 8px;
+    background-color: #e5e7eb;
+    color: #374151;
 }
 
 .auth-tabs .active {
-    background-color: #ff6f61;
+    background-color: #2563eb;
     color: white;
 }
 
@@ -88,11 +91,19 @@ form {
 
 label {
     margin-top: 10px;
+    color: #374151;
 }
 
 input {
     padding: 6px;
     margin-top: 4px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+}
+
+input:focus {
+    outline: none;
+    border-color: #2563eb;
 }
 
 .checkbox {

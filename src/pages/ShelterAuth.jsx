@@ -1,6 +1,15 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 export default function ShelterAuth() {
+    const navigate = useNavigate();
+    const [isSignIn, setIsSignIn] = useState(true);
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        navigate('/menu');
+    };
+
     return (
         <div className="container">
             <div className="left">
@@ -21,24 +30,42 @@ export default function ShelterAuth() {
                 <p>Help pets find their forever homes</p>
 
                 <div className="auth-tabs">
-                    <button className="active">Sign In</button>
-                    <button>Create Account</button>
+                    <button 
+                        className={isSignIn ? 'active' : ''}
+                        onClick={() => setIsSignIn(true)}
+                    >
+                        Sign In
+                    </button>
+                    <button 
+                        className={!isSignIn ? 'active' : ''}
+                        onClick={() => setIsSignIn(false)}
+                    >
+                        Create Account
+                    </button>
                 </div>
 
-                <form>
+                <form onSubmit={handleSubmit}>
                     <label>Email</label>
-                    <input type="email" placeholder="you@example.com" />
+                    <input type="email" placeholder="you@example.com" required />
 
                     <label>Password</label>
-                    <input type="password" placeholder="******" />
+                    <input type="password" placeholder="******" required />
 
-                    <div className="checkbox">
-                        <input type="checkbox"/>
-                        <span>Remember me</span>
-                    </div>
+                    {isSignIn && (
+                        <div className="checkbox">
+                            <input type="checkbox"/>
+                            <span>Remember me</span>
+                        </div>
+                    )}
 
-                    <button type="submit">Sign In as Shelter</button>
+                    <button type="submit">
+                        {isSignIn ? 'Sign In as Shelter' : 'Create Shelter Account'}
+                    </button>
                 </form>
+
+                <div style={{ marginTop: '20px', padding: '10px', background: '#fff9e6', borderRadius: '6px', fontSize: '12px' }}>
+                    Demo Mode: Click the button to access the app directly
+                </div>
             </div>
         </div>
     );
