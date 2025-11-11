@@ -1,35 +1,108 @@
 import React, { useState } from "react";
 
+const short = (text) =>
+  text.length > 40 ? text.substring(0, 40) + "..." : text;
+
 export default function ContactPage() {
-  const chatList = [
-    { id: 1, name: "Happy Paws Shelter", lastMessage: "Hi, any questions about Max?", time: "2m ago" },
-    { id: 2, name: "Rescue Haven", lastMessage: "Your application is approved!", time: "1h ago" },
-    { id: 3, name: "City Animal Shelter", lastMessage: "Would you like to schedule a visit?", time: "3h ago" },
+  const initialChats = [
+    {
+      id: 1,
+      name: "Happy Paws Shelter",
+      lastMessage: "Hi, any questions about Max?",
+      time: "2m ago",
+      messages: [
+        { text: "Hello! How can I help you today?", sender: "shelter", time: "10:30 AM" },
+        { text: "Hi! I'm interested in adopting a cat.", sender: "adopter", time: "10:32 AM" },
+        { text: "That's wonderful! Do you have any specific preferences?", sender: "shelter", time: "10:33 AM" },
+      ],
+    },
+    {
+      id: 2,
+      name: "Rescue Haven",
+      lastMessage: "Your application is approved!",
+      time: "1h ago",
+      messages: [
+        { text: "Congrats! Your application has been approved.", sender: "shelter", time: "9:00 AM" },
+      ],
+    },
+    {
+      id: 3,
+      name: "City Animal Shelter",
+      lastMessage: "Would you like to schedule a visit?",
+      time: "3h ago",
+      messages: [
+        { text: "Would you like to schedule a visit?", sender: "shelter", time: "8:00 AM" },
+      ],
+    },
   ];
 
-  const [selectedChat, setSelectedChat] = useState(chatList[0]);
-  const [messages, setMessages] = useState([
-    { text: "Hello! How can I help you today?", sender: "shelter", time: "10:30 AM" },
-    { text: "Hi! I'm interested in adopting a cat.", sender: "adopter", time: "10:32 AM" },
-    { text: "That's wonderful! Do you have any specific preferences?", sender: "shelter", time: "10:33 AM" },
-  ]);
+  const [chatList, setChatList] = useState(initialChats);
+  const [selectedChat, setSelectedChat] = useState(initialChats[0]);
   const [input, setInput] = useState("");
 
   const handleSend = () => {
-    if (input.trim() === "") return;
+    if (!input.trim()) return;
+
     const now = new Date();
-    const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-    setMessages([...messages, { text: input, sender: "adopter", time: timeStr }]);
+    const timeStr = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    const newMessage = { text: input, sender: "adopter", time: timeStr };
+
+    const updatedChats = chatList.map((chat) =>
+      chat.id === selectedChat.id
+        ? {
+            ...chat,
+            messages: [...chat.messages, newMessage],
+            lastMessage: input,
+            time: "Just now",
+          }
+        : chat
+    );
+
+    setChatList(updatedChats);
+
+    setSelectedChat((prev) => ({
+      ...prev,
+      messages: [...prev.messages, newMessage],
+      lastMessage: input,
+      time: "Just now",
+    }));
+
     setInput("");
+
+    setTimeout(() => {
+      const replyTime = new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      const autoReply = { text: "Thank you for your message! We'll get back to you soon.", sender: "shelter", time: replyTime };
+
+      const chatsWithReply = updatedChats.map((chat) =>
+        chat.id === selectedChat.id
+          ? { ...chat, messages: [...chat.messages, autoReply], lastMessage: autoReply.text, time: "Just now" }
+          : chat
+      );
+
+    setChatList(chatsWithReply);
+    setSelectedChat((prev) => ({
+      ...prev,
+      messages: [...prev.messages, autoReply],
+      lastMessage: autoReply.text,
+      time: "Just now",
+    }));
+  }, 1000);
+
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
   };
 
+  const handleSelectedChat = (chat) => {
+    const newList = chatList.filter((c) => c.id !== chat.id);
+    setChatList([chat, ...newList]);
+    setSelectedChat(chat);
+  };
+  
   return (
     <div style={styles.container}>
       {/* Left side: Chat list */}
@@ -45,20 +118,13 @@ export default function ContactPage() {
               borderBottom: "1px solid #ccc",
               borderLeft: selectedChat.id === chat.id ? "3px solid #2563eb" : "3px solid transparent",
             }}
-            onClick={() => {
-              setSelectedChat(chat);
-              setMessages([
-                { text: "Hello! How can I help you today?", sender: "shelter", time: "10:30 AM" },
-                { text: "Hi! I'm interested in adopting a cat.", sender: "adopter", time: "10:32 AM" },
-                { text: "That's wonderful! Do you have any specific preferences?", sender: "shelter", time: "10:33 AM" },
-              ]);
-            }}
+            onClick={() => handleSelectedChat(chat)}
           >
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
               <strong style={{ color: "#1e3a8a" }}>{chat.name}</strong>
               <span style={{ fontSize: "11px", color: "#6b7280" }}>{chat.time}</span>
             </div>
-            <p style={{ margin: 0, fontSize: "13px", color: "#4b5563" }}>{chat.lastMessage}</p>
+            <p style={{ margin: 0, fontSize: "13px", color: "#4b5563" }}>{short(chat.lastMessage)}</p>
           </div>
         ))}
       </div>
@@ -69,9 +135,9 @@ export default function ContactPage() {
           <h3 style={{ margin: 0, color: "#1e3a8a" }}>{selectedChat.name}</h3>
           <p style={{ margin: "4px 0 0 0", fontSize: "13px", color: "#6b7280" }}>Active now</p>
         </div>
-        
+
         <div style={styles.chatBox}>
-          {messages.map((msg, index) => (
+          {selectedChat.messages.map((msg, index) => (
             <div
               key={index}
               style={{
@@ -107,7 +173,7 @@ export default function ContactPage() {
             placeholder="Type your message..."
             value={input}
             onChange={e => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyPress}
             rows={2}
           />
           <button 
