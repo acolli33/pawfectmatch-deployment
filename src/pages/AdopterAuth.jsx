@@ -13,6 +13,11 @@ export default function AdopterAuth() {
     return (
         <div className="container">
             <div className="left">
+                <div className="floating-images">
+                <img src="images/dog_homepage.jpg" alt="dog" className="circle top-left" />
+                <img src="images/cat_homepage.jpg" alt="cat" className="circle top-right" />
+                <img src="images/dog2_homepage.jpg" alt="dog2" className="circle bottom-right" />
+                </div>
                 <h1>PawfectMatch</h1>
                 <p>
                     Find your perfect furry companion. Every pet deserves a loving home, and every home deserves a loyal friend.

@@ -1,193 +1,147 @@
-import React, { useState } from "react";
-
-const short = (text) =>
-  text.length > 40 ? text.substring(0, 40) + "..." : text;
+import React, { useEffect, useState } from "react";
+import {
+  getChats,
+  sendMessage,
+  receiveMessage,
+  CURRENT_USER_ID,
+} from "../services/chatService";
 
 export default function ContactPage() {
-  const initialChats = [
-    {
-      id: 1,
-      name: "Happy Paws Shelter",
-      lastMessage: "Hi, any questions about Max?",
-      time: "2m ago",
-      messages: [
-        { text: "Hello! How can I help you today?", sender: "shelter", time: "10:30 AM" },
-        { text: "Hi! I'm interested in adopting a cat.", sender: "adopter", time: "10:32 AM" },
-        { text: "That's wonderful! Do you have any specific preferences?", sender: "shelter", time: "10:33 AM" },
-      ],
-    },
-    {
-      id: 2,
-      name: "Rescue Haven",
-      lastMessage: "Your application is approved!",
-      time: "1h ago",
-      messages: [
-        { text: "Congrats! Your application has been approved.", sender: "shelter", time: "9:00 AM" },
-      ],
-    },
-    {
-      id: 3,
-      name: "City Animal Shelter",
-      lastMessage: "Would you like to schedule a visit?",
-      time: "3h ago",
-      messages: [
-        { text: "Would you like to schedule a visit?", sender: "shelter", time: "8:00 AM" },
-      ],
-    },
-  ];
+  const [chatList, setChatList] = useState([]);
+  const [activeChatId, setActiveChatId] = useState(1);
+  const [message, setMessage] = useState("");
 
-  const [chatList, setChatList] = useState(initialChats);
-  const [selectedChat, setSelectedChat] = useState(initialChats[0]);
-  const [input, setInput] = useState("");
+  useEffect(() => {
+    getChats().then(setChatList);
+  }, []);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const activeChat = chatList.find(chat => chat.id === activeChatId);
 
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-    const newMessage = { text: input, sender: "adopter", time: timeStr };
+  const storedChats = [...chatList].sort(
+    (a, b) => b.lastActivityAt - a.lastActivityAt
+  );
 
-    const updatedChats = chatList.map((chat) =>
-      chat.id === selectedChat.id
-        ? {
-            ...chat,
-            messages: [...chat.messages, newMessage],
-            lastMessage: input,
-            time: "Just now",
-          }
-        : chat
-    );
-
-    setChatList(updatedChats);
-
-    setSelectedChat((prev) => ({
-      ...prev,
-      messages: [...prev.messages, newMessage],
-      lastMessage: input,
-      time: "Just now",
-    }));
-
-    setInput("");
-
-    setTimeout(() => {
-      const replyTime = new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-      const autoReply = { text: "Thank you for your message! We'll get back to you soon.", sender: "shelter", time: replyTime };
-
-      const chatsWithReply = updatedChats.map((chat) =>
-        chat.id === selectedChat.id
-          ? { ...chat, messages: [...chat.messages, autoReply], lastMessage: autoReply.text, time: "Just now" }
-          : chat
-      );
-
-    setChatList(chatsWithReply);
-    setSelectedChat((prev) => ({
-      ...prev,
-      messages: [...prev.messages, autoReply],
-      lastMessage: autoReply.text,
-      time: "Just now",
-    }));
-  }, 1000);
-
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
-  const handleSelectedChat = (chat) => {
-    const newList = chatList.filter((c) => c.id !== chat.id);
-    setChatList([chat, ...newList]);
-    setSelectedChat(chat);
+  const openChat = (chatId) => {
+    setActiveChatId(chatId);
+  
+    setChatList(prev => {
+      const selectedChat = prev.find(chat => chat.id === chatId);
+      const otherChats = prev.filter(chat => chat.id !== chatId);
+      return [
+        { ...selectedChat, unread: 0 },
+        ...otherChats,
+      ];
+    });
   };
   
+
+  const handleSend = async () => {
+    if (!message.trim()) return;
+
+    const updatedChats = await sendMessage(activeChatId, message);
+    setChatList(updatedChats);
+    setMessage("");
+
+    setTimeout(async () => {
+      const reply = await receiveMessage(
+        activeChatId,
+        "Thanks for your message! We'll get back to you soon.",
+        activeChatId
+      );
+      setChatList(reply);
+    }, 5000);
+  };
+
   return (
     <div style={styles.container}>
       {/* Left side: Chat list */}
       <div style={styles.leftPane}>
-        <h3 style={{ textAlign: "center", color: "#2563eb" }}>Messages</h3>
-        {chatList.map(chat => (
+        {storedChats.map(chat => (
           <div
             key={chat.id}
+            onClick={() => openChat(chat.id)}
             style={{
-              padding: "15px",
+              padding: "16px",
+              borderBottom: "1px solid #e5e7eb",
               cursor: "pointer",
-              backgroundColor: selectedChat.id === chat.id ? "#e0f2fe" : "#fff",
-              borderBottom: "1px solid #ccc",
-              borderLeft: selectedChat.id === chat.id ? "3px solid #2563eb" : "3px solid transparent",
+              backgroundColor: chat.id === activeChatId ? "#dbeafe" : "#fff",
+              borderLeft: chat.id === activeChatId ? "4px solid #2563eb" : "4px solid transparent",
             }}
-            onClick={() => handleSelectedChat(chat)}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-              <strong style={{ color: "#1e3a8a" }}>{chat.name}</strong>
-              <span style={{ fontSize: "11px", color: "#6b7280" }}>{chat.time}</span>
+            <div style={{ fontWeight: "600" }}>{chat.name}</div>
+            <div style={{ fontSize: "13px", color: "#6b7280" }}>
+              {chat.lastMessage}
             </div>
-            <p style={{ margin: 0, fontSize: "13px", color: "#4b5563" }}>{short(chat.lastMessage)}</p>
+
+            {chat.unread > 0 && (
+              <div
+                style={{
+                  marginTop: "6px",
+                  display: "inline-block",
+                  backgroundColor: "#2563eb",
+                  color: "#fff",
+                  borderRadius: "12px",
+                  padding: "2px 8px",
+                  fontSize: "12px",
+                }}
+              >
+                {chat.unread}
+              </div>
+            )}
           </div>
         ))}
       </div>
 
       {/* Right side: Selected chat */}
       <div style={styles.rightPane}>
-        <div style={styles.chatHeader}>
-          <h3 style={{ margin: 0, color: "#1e3a8a" }}>{selectedChat.name}</h3>
-          <p style={{ margin: "4px 0 0 0", fontSize: "13px", color: "#6b7280" }}>Active now</p>
-        </div>
-
-        <div style={styles.chatBox}>
-          {selectedChat.messages.map((msg, index) => (
-            <div
-              key={index}
-              style={{
-                display: "flex",
-                justifyContent: msg.sender === "adopter" ? "flex-end" : "flex-start",
-                marginBottom: "8px",
-              }}
-            >
-              <div
-                style={{
-                  ...styles.message,
-                  backgroundColor: msg.sender === "adopter" ? "#2563eb" : "#f3f4f6",
-                  color: msg.sender === "adopter" ? "#ffffff" : "#1f2937",
-                }}
-              >
-                <p style={{ margin: "0 0 4px 0", fontSize: "14px" }}>{msg.text}</p>
-                <p style={{ 
-                  margin: 0, 
-                  fontSize: "11px", 
-                  color: msg.sender === "adopter" ? "#bfdbfe" : "#6b7280",
-                  textAlign: "right" 
-                }}>
-                  {msg.time}
-                </p>
-              </div>
+        {activeChat && (
+          <>
+            <div style={styles.chatHeader}>
+              <strong>{activeChat.name}</strong>
             </div>
-          ))}
-        </div>
 
-        <div style={styles.inputContainer}>
-          <textarea
-            style={styles.textarea}
-            placeholder="Type your message..."
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={handleKeyPress}
-            rows={2}
-          />
-          <button 
-            style={{
-              ...styles.button,
-              opacity: input.trim() === "" ? 0.5 : 1,
-              cursor: input.trim() === "" ? "not-allowed" : "pointer",
-            }} 
-            onClick={handleSend}
-            disabled={input.trim() === ""}
-          >
-            Send
-          </button>
-        </div>
+            <div style={styles.chatBox}>
+              {activeChat.messages.map((msg, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    display: "flex",
+                    justifyContent:
+                      msg.sender === CURRENT_USER_ID ? "flex-end" : "flex-start",
+                    marginBottom: "10px",
+                  }}
+                >
+                  <div
+                    style={{
+                      ...styles.message,
+                      backgroundColor:
+                        msg.sender === CURRENT_USER_ID ? "#2563eb" : "#e5e7eb",
+                      color:
+                        msg.sender === CURRENT_USER_ID ? "#fff" : "#000",
+                    }}
+                  >
+                    <div>{msg.text}</div>
+                    <div style={{ fontSize: "11px", marginTop: "4px", opacity: 0.7 }}>
+                      {msg.time}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div style={styles.inputContainer}>
+              <textarea
+                style={styles.textarea}
+                rows={2}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+              />
+              <button style={styles.button} onClick={handleSend}>
+                Send
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -263,4 +217,3 @@ const styles = {
     transition: "background-color 0.2s",
   },
 };
-
