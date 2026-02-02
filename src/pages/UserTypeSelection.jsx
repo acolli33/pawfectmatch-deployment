@@ -6,6 +6,11 @@ export default function UserTypeSelection() {
     return (
         <div className="container">
             <div className="left">
+                <div className="floating-images">
+                <img src="images/dog_homepage.jpg" alt="dog" className="circle top-left" />
+                <img src="images/cat_homepage.jpg" alt="cat" className="circle top-right" />
+                <img src="images/dog2_homepage.jpg" alt="dog2" className="circle bottom-right" />
+                </div>
                 <h1>PawfectMatch</h1>
                 <p>
                     Connecting loving homes with pets in need. Whether you are here to adopt or work with a shelter to help pets find homes, we're here to help make a difference.
