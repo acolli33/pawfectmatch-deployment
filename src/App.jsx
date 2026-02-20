@@ -2,10 +2,12 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import UserTypeSelection from './pages/UserTypeSelection';
 import AdopterAuth from './pages/AdopterAuth';
 import ShelterAuth from './pages/ShelterAuth';
-import MainMenu from './pages/MainMenu';
+import AdopterMainMenu from './pages/AdopterMainMenu';
+import ShelterMainMenu from './pages/ShelterMainMenu';
 import AdopterPreferencesForm from './pages/AdopterPreferencesForm';
 import AnimalProfileForm from './pages/AnimalProfileForm';
-import ContactPage from './pages/ContactPage';
+import AdopterContactPage from './pages/AdopterContactPage';
+import ShelterContactPage from './pages/ShelterContactPage';
 import RoleGuard from './auth/RoleGuard.jsx';
 import './App.css';
 
@@ -13,22 +15,22 @@ function App() {
   return (
     <Router>
       <Routes>
+
         {/* Public Routes */}
         <Route path="/" element={<UserTypeSelection />} />
         <Route path="/adopter" element={<AdopterAuth />} />
         <Route path="/shelter" element={<ShelterAuth />} />
 
-        {/* Authed Routes*/}
+        {/* Adopter Routes */}
         <Route
-          path="/menu"
+          path="/adopter-menu"
           element={
-            <RoleGuard allowRoles={["adopter", "shelter"]}>
-              <MainMenu />
+            <RoleGuard allowRoles={["adopter"]}>
+              <AdopterMainMenu />
             </RoleGuard>
           }
         />
 
-        {/* Adopter-Only Routes */}
         <Route
           path="/preferences"
           element={
@@ -38,7 +40,25 @@ function App() {
           }
         />
 
-        {/* Shelter-Only Routes */}
+        <Route
+          path="/adopter-contact"
+          element={
+            <RoleGuard allowRoles={["adopter"]}>
+              <AdopterContactPage />
+            </RoleGuard>
+          }
+        />
+
+        {/* Shelter Routes */}
+        <Route
+          path="/shelter-menu"
+          element={
+            <RoleGuard allowRoles={["shelter"]}>
+              <ShelterMainMenu />
+            </RoleGuard>
+          }
+        />
+
         <Route
           path="/animal/new"
           element={
@@ -48,15 +68,15 @@ function App() {
           }
         />
 
-        {/* Authed */}
         <Route
-          path="/contact"
+          path="/shelter-contact"
           element={
-            <RoleGuard allowRoles={["adopter", "shelter"]}>
-              <ContactPage />
+            <RoleGuard allowRoles={["shelter"]}>
+              <ShelterContactPage />
             </RoleGuard>
           }
         />
+
       </Routes>
     </Router>
   );

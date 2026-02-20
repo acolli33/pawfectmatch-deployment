@@ -89,7 +89,7 @@ export default function AnimalProfileForm() {
       message: `${formData.name}'s profile created successfully!` 
     });
 
-    setTimeout(() => navigate('/menu'), 2000);
+    setTimeout(() => navigate('/shelter-menu'), 2000);
     setLoading(false);
   };
 
@@ -133,7 +133,7 @@ export default function AnimalProfileForm() {
             </ul>
           </div>
 
-          <button onClick={() => navigate('/menu')} style={styles.backButton}>
+          <button onClick={() => navigate('/shelter-menu')} style={styles.backButton}>
             Back to Menu
           </button>
         </div>
@@ -431,7 +431,7 @@ export default function AnimalProfileForm() {
             </button>
             <button
               type="button"
-              onClick={() => navigate('/menu')}
+              onClick={() => navigate('/shelter-menu')}
               style={styles.cancelButton}
             >
               Cancel

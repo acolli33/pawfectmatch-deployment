@@ -6,7 +6,7 @@ import { useAuth } from '../auth/AuthContext.jsx';
  * ShelterAuth
  * 
  * Authentication page for shelters.
- * Hadnles sign in and account creation.
+ * Handles sign in and account creation.
  * 
  * On successful authentication, sets a demo session
  * and navigates to the main menu.
@@ -24,10 +24,10 @@ export default function ShelterAuth() {
     /**
      * handleSubmit
      * 
-     * Handles shleter login form submission.
+     * Handles shelter login form submission.
      * Validates input and sets a demo session.
      * 
-     * @param {React.FormEvent<HTMLFormElement} e 
+     * @param {React.FormEvent<HTMLFormElement>} e
      */
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -37,17 +37,24 @@ export default function ShelterAuth() {
             return;
         }
 
+        // Store authenticated session using AuthContext
         setSession(
             { email, role: 'shelter' },
             'demo-token-shelter'
         );
 
-        navigate('/menu');
+        // Redirect to new shelter menu route
+        navigate('/shelter-menu');
     };
 
     return (
         <div className="container">
             <div className="left">
+                <div className="floating-images">
+                <img src="images/dog_homepage.jpg" alt="dog" className="circle top-left" />
+                <img src="images/cat_homepage.jpg" alt="cat" className="circle top-right" />
+                <img src="images/dog2_homepage.jpg" alt="dog2" className="circle bottom-right" />
+                </div>
                 <h1>PawfectMatch</h1>
                 <p>
                     Help pets find their forever homes. Manage adoptions, list pets, and connect with adopters looking for their new companions.
@@ -116,6 +123,9 @@ export default function ShelterAuth() {
 
                 <div style={{ marginTop: '20px', padding: '10px', background: '#fff9e6', borderRadius: '6px', fontSize: '12px' }}>
                     Demo Mode: Click the button to access the app directly
+                </div>
+                <div style={{ marginTop: '20px', fontSize: '12px', color: '#999' }}>
+                    <a href="/shelter-menu" style={{ color: '#999', textDecoration: 'none' }}>Skip to shelter main menu</a>
                 </div>
             </div>
         </div>

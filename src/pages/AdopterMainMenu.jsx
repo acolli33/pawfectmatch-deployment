@@ -9,14 +9,15 @@ export default function MainMenu() {
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '40px' }}>
           <h1>PawfectMatch</h1>
-          <p>Dating App for Animal Adoption</p>
+          <p>Adopter Dashboard</p>
           <p style={{ color: '#666', marginTop: '10px' }}>
             Find your perfect companion or help animals find their forever homes
           </p>
         </div>
 
         {/* Demo Badge */}
-        <div style={{ 
+        <div 
+         style={{ 
           background: '#fff9e6', 
           border: '1px solid #ffe066', 
           borderRadius: '8px', 
@@ -37,13 +38,7 @@ export default function MainMenu() {
             <button>Get Started</button>
           </div>
 
-          <div className="card" onClick={() => navigate('/animal/new')} style={{ marginBottom: '20px', width: '100%' }}>
-            <h3>Shelter Admin</h3>
-            <p>Add new animals to your shelter's adoption listings</p>
-            <button>Add Animal</button>
-          </div>
-
-          <div className="card" onClick={() => navigate('/contact')} style={{ marginBottom: '20px', width: '100%' }}>
+          <div className="card" onClick={() => navigate('/adopter-contact')} style={{ marginBottom: '20px', width: '100%' }}>
             <h3>Messages</h3>
             <p>Chat with shelters about available animals</p>
             <button>Open Messages</button>
