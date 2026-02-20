@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   getChats,
   sendMessage,
@@ -7,6 +8,8 @@ import {
 } from "../services/chatService";
 
 export default function ContactPage() {
+  const navigate = useNavigate();
+
   const [chatList, setChatList] = useState([]);
   const [activeChatId, setActiveChatId] = useState(1);
   const [message, setMessage] = useState("");
@@ -49,13 +52,22 @@ export default function ContactPage() {
         activeChatId
       );
       setChatList(reply);
-    }, 5000);
+    }, 3000);
   };
 
   return (
     <div style={styles.container}>
       {/* Left side: Chat list */}
       <div style={styles.leftPane}>
+
+        {/* Back Button */}
+        <button
+          onClick={() => navigate("/menu")}
+          style={styles.backButton}
+        >
+          ← Back to Main Menu
+        </button>
+
         {storedChats.map(chat => (
           <div
             key={chat.id}
@@ -69,7 +81,7 @@ export default function ContactPage() {
             }}
           >
             <div style={{ fontWeight: "600" }}>{chat.name}</div>
-            <div style={{ fontSize: "13px", color: "#6b7280" }}>
+            <div style={{ fontSize: "13px", color: "#111827" }}>
               {chat.lastMessage}
             </div>
 
@@ -121,7 +133,8 @@ export default function ContactPage() {
                     }}
                   >
                     <div>{msg.text}</div>
-                    <div style={{ fontSize: "11px", marginTop: "4px", opacity: 0.7 }}>
+                    <div style={{ fontSize: "11px", marginTop: "4px", opacity: 1, 
+                      color: msg.sender === CURRENT_USER_ID ? "#ffffff" : "#1f2937"}}>
                       {msg.time}
                     </div>
                   </div>
@@ -130,7 +143,12 @@ export default function ContactPage() {
             </div>
 
             <div style={styles.inputContainer}>
+              <label htmlFor="messageInput" style={{ display: "none" }}>
+                Message
+              </label>
               <textarea
+                id="messageInput"
+                aria-label="Message input"
                 style={styles.textarea}
                 rows={2}
                 value={message}
@@ -168,6 +186,17 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     backgroundColor: "#ffffff",
+  },
+  backButton: {
+    padding: "14px 16px",
+    border: "none",
+    backgroundColor: "#2563eb",
+    color: "#ffffff",
+    cursor: "pointer",
+    fontWeight: "600",
+    textAlign: "left",
+    borderBottom: "1px solid #e5e7eb",
+    marginBottom: "12px",
   },
   chatHeader: {
     padding: "16px 20px",
@@ -217,3 +246,104 @@ const styles = {
     transition: "background-color 0.2s",
   },
 };
+
+
+
+
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
+
+export const CURRENT_USER_ID = "adopter";
+
+let chats = [
+  {
+    id: 1,
+    name: "Happy Paws Shelter",
+    lastActivityAt: Date.now(),
+    lastMessage: "Hi, any questions about Max?",
+    time: "2m ago",
+    unread: 0,
+    messages: [
+      { text: "Hello! How can I help you today?", sender: "shelter", time: "10:30 AM" },
+      { text: "Hi! I'm interested in adopting a cat.", sender: "adopter", time: "10:32 AM" },
+      { text: "That's wonderful! Do you have any specific preferences?", sender: "shelter", time: "10:33 AM" },
+    ],
+  },
+  {
+    id: 2,
+    name: "Rescue Haven",
+    lastActivityAt: Date.now(),
+    lastMessage: "Your application is approved!",
+    time: "1h ago",
+    unread: 0,
+    messages: [
+      { text: "Congrats! Your application has been approved.", sender: "shelter", time: "9:00 AM" },
+    ],
+  },
+  {
+    id: 3,
+    name: "City Animal Shelter",
+    lastActivityAt: Date.now(),
+    lastMessage: "Would you like to schedule a visit?",
+    time: "3h ago",
+    unread: 0,
+    messages: [
+      { text: "Would you like to schedule a visit?", sender: "shelter", time: "8:00 AM" },
+    ],
+  },
+];
+
+export const getChats = async () => {
+  return JSON.parse(JSON.stringify(chats));
+};
+
+export const sendMessage = async (chatId, text) => {
+  const now = Date.now();
+  const time = new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+  chats = chats.map(chat => {
+    if (chat.id !== chatId) return chat;
+
+    const newMessage = {
+      text,
+      sender: CURRENT_USER_ID,
+      time,
+    };
+
+    return {
+      ...chat,
+      messages: [...chat.messages, newMessage],
+      lastMessage: text,
+      time: "Just now",
+      lastActivityAt: now,
+    };
+  });
+
+  return JSON.parse(JSON.stringify(chats));
+};
+
+export const receiveMessage = async (chatId, text, activeChatId) => {
+  const now = Date.now();
+  const time = new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+  chats = chats.map(chat => {
+    if (chat.id !== chatId) return chat;
+
+    const newMessage = {
+      text,
+      sender: "shelter",
+      time,
+    };
+
+    return {
+      ...chat,
+      messages: [...chat.messages, newMessage],
+      lastMessage: text,
+      time: "Just now",
+      lastActivityAt: now,
+      unread: chatId === activeChatId ? chat.unread : chat.unread + 1,
+    };
+  });
+
+  return JSON.parse(JSON.stringify(chats));
+};
+
