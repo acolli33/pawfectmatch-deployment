@@ -20,14 +20,24 @@ import { useAuth } from "./AuthContext.jsx";
  * @returns {JSX.Element}
  */
 export default function RoleGuard({ allowRoles, children }) {
-    const { isAuthed, role } = useAuth();
+  const { isAuthed, role } = useAuth();
 
-    if (!isAuthed) return <Navigate to="/" replace />;
+  // Not logged in → send to home
+  if (!isAuthed) {
+    return <Navigate to="/" replace />;
+  }
 
-    if (allowRoles?.length && (!role || !allowRoles.includes(role))) {
-        const fallback = role === "shelter" ? "/menu" : "/menu";
-        return <Navigate to={fallback} replace />;
+  // Logged in but wrong role → send to correct role menu
+  if (allowRoles?.length && (!role || !allowRoles.includes(role))) {
+    if (role === "adopter") {
+      return <Navigate to="/adopter-menu" replace />;
+    }
+    if (role === "shelter") {
+      return <Navigate to="/shelter-menu" replace />;
     }
 
-    return children;
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
 }
