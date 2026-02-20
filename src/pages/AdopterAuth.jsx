@@ -1,13 +1,49 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useAuth } from '../auth/AuthContext.jsx';
 
+/**
+ * AdopterAuth
+ * 
+ * Authentication page for adopters.
+ * Allows users to sign in or create an account.
+ * 
+ * On successful authentication, sets a demo session
+ * and navigates to the main menu.
+ * @returns {JSX.Element}
+ */
 export default function AdopterAuth() {
     const navigate = useNavigate();
+    const { setSession } = useAuth();
     const [isSignIn, setIsSignIn] = useState(true);
 
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    /**
+     * handleSubmit
+     * 
+     * Handles adopter login form submission.
+     * Validates input and sets a demo session.
+     * 
+     * @param {React.FormEvent<HTMLFormElement>} e
+     * @returns 
+     */
     const handleSubmit = (e) => {
         e.preventDefault();
-        localStorage.setItem('userType', 'adopter');
+
+        if (!email || !password) {
+            alert('Please enter email and password');
+            return;
+        }
+
+        // Store authenticated session using AuthContext
+        setSession(
+            { email, role: 'adopter' },
+            'demo-token-adopter'
+        );
+
+        // Redirect to new adopter menu route
         navigate('/adopter-menu');
     };
 
@@ -37,12 +73,14 @@ export default function AdopterAuth() {
 
                 <div className="auth-tabs">
                     <button 
+                        type="button"
                         className={isSignIn ? 'active' : ''}
                         onClick={() => setIsSignIn(true)}
                     >
                         Sign In
                     </button>
                     <button 
+                        type="button"
                         className={!isSignIn ? 'active' : ''}
                         onClick={() => setIsSignIn(false)}
                     >
@@ -51,16 +89,30 @@ export default function AdopterAuth() {
                 </div>
 
                 <form onSubmit={handleSubmit}>
-                    <label>Email</label>
-                    <input type="email" placeholder="you@example.com" required />
+                    <label htmlFor="adopter-email">Email</label>
+                    <input
+                        id="adopter-email"
+                        type="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
 
-                    <label>Password</label>
-                    <input type="password" placeholder="******" required />
+                    <label htmlFor="adopter-password">Password</label>
+                    <input
+                        id="adopter-password"
+                        type="password"
+                        placeholder="******"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
 
                     {isSignIn && (
                         <div className="checkbox">
-                            <input type="checkbox"/>
-                            <span>Remember me</span>
+                            <input id="remember-adopter" type="checkbox"/>
+                            <label htmlFor="remember-adopter">Remember Me</label>
                         </div>
                     )}
 
