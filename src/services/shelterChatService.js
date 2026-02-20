@@ -1,11 +1,11 @@
-export const CURRENT_USER_ID = "adopter";
+export const CURRENT_USER_ID = "shelter";
 
 let chats = [
   {
     id: 1,
-    name: "Happy Paws Shelter",
+    name: "Frank Miller",
     lastActivityAt: Date.now(),
-    lastMessage: "Hi, any questions about Max?",
+    lastMessage: "That's wonderful! Do you have any specific preferences?",
     time: "2m ago",
     unread: 0,
     messages: [
@@ -16,24 +16,26 @@ let chats = [
   },
   {
     id: 2,
-    name: "Rescue Haven",
+    name: "Diane Mcdonald",
     lastActivityAt: Date.now(),
-    lastMessage: "Your application is approved!",
+    lastMessage: "Congrats! Your application has been approved.",
     time: "1h ago",
     unread: 0,
     messages: [
+        { text: "Hi there. I was hoping to check on the status of my application. Thanks!", sender: "adopter", time: "8:30 AM" },
       { text: "Congrats! Your application has been approved.", sender: "shelter", time: "9:00 AM" },
     ],
   },
   {
     id: 3,
-    name: "City Animal Shelter",
+    name: "Leah Freeman",
     lastActivityAt: Date.now(),
-    lastMessage: "Would you like to schedule a visit?",
+    lastMessage: "Thank you for reaching out, and that is great news! Would you like to schedule a visit?",
     time: "3h ago",
     unread: 0,
     messages: [
-      { text: "Would you like to schedule a visit?", sender: "shelter", time: "8:00 AM" },
+      { text: "Hello, I am very interested in adopting Bella.", sender: "adopter", time: "7:30 AM" },  
+      { text: "Thank you for reaching out, and that is great news! Would you like to schedule a visit?", sender: "shelter", time: "8:00 AM" },
     ],
   },
 ];

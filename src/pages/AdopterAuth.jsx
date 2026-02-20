@@ -7,7 +7,8 @@ export default function AdopterAuth() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        navigate('/menu');
+        localStorage.setItem('userType', 'adopter');
+        navigate('/adopter-menu');
     };
 
     return (
@@ -70,6 +71,9 @@ export default function AdopterAuth() {
 
                 <div style={{ marginTop: '20px', padding: '10px', background: '#fff9e6', borderRadius: '6px', fontSize: '12px' }}>
                     Demo Mode: Click the button to access the app directly
+                </div>
+                <div style={{ marginTop: '20px', fontSize: '12px', color: '#999' }}>
+                    <a href="/adopter-menu" style={{ color: '#999', textDecoration: 'none' }}>Skip to adopter main menu</a>
                 </div>
             </div>
         </div>

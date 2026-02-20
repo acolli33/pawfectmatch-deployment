@@ -7,7 +7,8 @@ export default function ShelterAuth() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        navigate('/menu');
+        localStorage.setItem('userType', 'shelter');
+        navigate('/shelter-menu');
     };
 
     return (
@@ -70,6 +71,9 @@ export default function ShelterAuth() {
 
                 <div style={{ marginTop: '20px', padding: '10px', background: '#fff9e6', borderRadius: '6px', fontSize: '12px' }}>
                     Demo Mode: Click the button to access the app directly
+                </div>
+                <div style={{ marginTop: '20px', fontSize: '12px', color: '#999' }}>
+                    <a href="/shelter-menu" style={{ color: '#999', textDecoration: 'none' }}>Skip to shelter main menu</a>
                 </div>
             </div>
         </div>

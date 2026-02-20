@@ -5,9 +5,9 @@ import {
   sendMessage,
   receiveMessage,
   CURRENT_USER_ID,
-} from "../services/chatService";
+} from "../services/shelterChatService";
 
-export default function ContactPage() {
+export default function ShelterContactPage() {
   const navigate = useNavigate();
 
   const [chatList, setChatList] = useState([]);
@@ -62,7 +62,7 @@ export default function ContactPage() {
 
         {/* Back Button */}
         <button
-          onClick={() => navigate("/menu")}
+          onClick={() => navigate("/shelter-menu")}
           style={styles.backButton}
         >
           ← Back to Main Menu
