@@ -95,7 +95,7 @@ export default function AdopterPreferencesForm() {
       message: 'Preferences saved successfully!' 
     });
 
-    setTimeout(() => navigate('/menu'), 2000);
+    setTimeout(() => navigate('/adopter-menu'), 2000);
     setLoading(false);
   };
 
@@ -129,7 +129,7 @@ export default function AdopterPreferencesForm() {
             </ul>
           </div>
 
-          <button onClick={() => navigate('/menu')} style={styles.backButton}>
+          <button onClick={() => navigate('/adopter-menu')} style={styles.backButton}>
             Back to Menu
           </button>
         </div>
@@ -296,7 +296,7 @@ export default function AdopterPreferencesForm() {
             )}
           </div>
 
-          {/* Submit Button */}
+          {/* Submit Buttons */}
           <div style={styles.buttonContainer}>
             <button
               type="button"
@@ -309,6 +309,13 @@ export default function AdopterPreferencesForm() {
               }}
             >
               {loading ? 'Saving...' : 'Save Preferences & Start Browsing'}
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/adopter-menu')}
+              style={styles.cancelButton}
+            >
+              Cancel
             </button>
           </div>
         </div>
