@@ -8,6 +8,7 @@ import AdopterPreferencesForm from './pages/AdopterPreferencesForm';
 import AnimalProfileForm from './pages/AnimalProfileForm';
 import AdopterContactPage from './pages/AdopterContactPage';
 import ShelterContactPage from './pages/ShelterContactPage';
+import ShelterListingsPage from './pages/ShelterListingsPage';
 import RoleGuard from './auth/RoleGuard.jsx';
 import './App.css';
 
@@ -60,7 +61,25 @@ function App() {
         />
 
         <Route
+          path="/shelter-listings"
+          element={
+            <RoleGuard allowRoles={["shelter"]}>
+              <ShelterListingsPage />
+            </RoleGuard>
+          }
+        />
+
+        <Route
           path="/animal/new"
+          element={
+            <RoleGuard allowRoles={["shelter"]}>
+              <AnimalProfileForm />
+            </RoleGuard>
+          }
+        />
+
+        <Route
+          path="/animal/:id/edit"
           element={
             <RoleGuard allowRoles={["shelter"]}>
               <AnimalProfileForm />

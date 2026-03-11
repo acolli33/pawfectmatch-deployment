@@ -2,6 +2,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../auth/AuthContext.jsx';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
 /**
  * AdopterAuth
  * 
@@ -20,6 +22,9 @@ export default function AdopterAuth() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
+    const [submitError, setSubmitError] = useState('');
+    const [loading, setLoading] = useState(false);
+
     /**
      * handleSubmit
      * 
@@ -29,22 +34,56 @@ export default function AdopterAuth() {
      * @param {React.FormEvent<HTMLFormElement>} e
      * @returns 
      */
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setSubmitError('');
 
         if (!email || !password) {
-            alert('Please enter email and password');
+            setSubmitError('Please enter email and password');
             return;
         }
 
-        // Store authenticated session using AuthContext
-        setSession(
-            { email, role: 'adopter' },
-            'demo-token-adopter'
-        );
+        if (!isSignIn) {
+            setSubmitError('Account creation is not available in this Alpha build. Use the provided test account.');
+            return;
+        }
 
-        // Redirect to new adopter menu route
-        navigate('/adopter-menu');
+        setLoading(true);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/auth/demo-login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email,
+                    password,
+                    role: 'adopter',
+                }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.ok) {
+                setSubmitError(result.error || 'Unable to sign in');
+                return;
+            }
+
+            // Store authenticated session using AuthContext
+            setSession(
+                result.data.user,
+                result.data.token
+            );
+
+            // Redirect to new adopter menu route
+            navigate('/adopter-menu');
+        } catch (error) {
+            console.error('Adopter login failed:', error);
+            setSubmitError('Unable to connect to the server. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -116,16 +155,33 @@ export default function AdopterAuth() {
                         </div>
                     )}
 
-                    <button type="submit">
-                        {isSignIn ? 'Sign In as Adopter' : 'Create Adopter Account'}
+                    {submitError && (
+                        <div
+                            style={{
+                                marginTop: '12px',
+                                padding: '10px 12px',
+                                borderRadius: '6px',
+                                border: '1px solid #dc2626',
+                                background: '#fee2e2',
+                                color: '#991b1b',
+                                fontSize: '14px',
+                            }}
+                        >
+                            {submitError}
+                        </div>
+                    )}
+
+                    <button type="submit" disabled={loading}>
+                        {loading
+                            ? 'Loading...'
+                            : isSignIn
+                                ? 'Sign In as Adopter'
+                                : 'Create Adopter Account'}
                     </button>
                 </form>
 
                 <div style={{ marginTop: '20px', padding: '10px', background: '#fff9e6', borderRadius: '6px', fontSize: '12px' }}>
-                    Demo Mode: Click the button to access the app directly
-                </div>
-                <div style={{ marginTop: '20px', fontSize: '12px', color: '#999' }}>
-                    <a href="/adopter-menu" style={{ color: '#999', textDecoration: 'none' }}>Skip to adopter main menu</a>
+                    Demo Mode: use an adopter email that already exists in Supabase (adopter@example.com)
                 </div>
             </div>
         </div>

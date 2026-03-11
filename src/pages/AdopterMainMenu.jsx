@@ -1,7 +1,9 @@
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext.jsx';
 
 export default function MainMenu() {
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   return (
     <div style={{ background: '#fafafa', minHeight: '100vh', padding: '40px' }}>
@@ -26,7 +28,7 @@ export default function MainMenu() {
           textAlign: 'center'
         }}>
           <p style={{ margin: 0, fontSize: '14px' }}>
-            Demo Mode - All data stored locally in your browser
+            Demo - Test account mode
           </p>
         </div>
 
@@ -74,6 +76,16 @@ export default function MainMenu() {
 
         {/* Back to Login */}
         <div style={{ textAlign: 'center' }}>
+          <button
+            onClick={() => {
+              logout();
+              navigate('/');
+            }}
+            style={{ marginRight: '12px' }}
+          >
+            Log Out
+          </button>
+
           <a href="/" style={{ color: '#666', fontSize: '14px', textDecoration: 'none' }}>
             Back to Login Selection
           </a>

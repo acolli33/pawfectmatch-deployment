@@ -1,8 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext.jsx';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export default function AdopterPreferencesForm() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
   const [formData, setFormData] = useState({
     animalTypes: [],
     breeds: '',
@@ -34,6 +39,50 @@ export default function AdopterPreferencesForm() {
     { value: 'extra-large', label: 'Extra Large (100+ lbs)' },
   ];
 
+  useEffect(() => {
+    const loadPreferences = async () => {
+      if (!user?.email || user.role !== 'adopter') return;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/preferences/me`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'x-demo-email': user.email,
+            'x-demo-role': user.role,
+          },
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.ok || !result.data) return;
+
+        const saved = result.data;
+
+        setFormData({
+          animalTypes: Array.isArray(saved.animal_types)
+            ? saved.animal_types
+            : [],
+          breeds: saved.breeds || '',
+          agePreference: saved.age_preference || 'any',
+          sizePreference: Array.isArray(saved.size_preferences)
+            ? saved.size_preferences
+            : [],
+          disposition: {
+            goodWithChildren: saved.good_with_children || false,
+            goodWithOtherAnimals: saved.good_with_other_animals || false,
+            mustBeLeashed: false,
+          },
+          maxDistance: saved.max_distance || 50,
+          additionalNotes: saved.additional_notes || '',
+        });
+      } catch (error) {
+        console.error('Failed to load preferences:', error);
+      }
+    };
+
+    loadPreferences();
+  }, [user]);
+
   const validateForm = () => {
     const newErrors = {};
     if (formData.animalTypes.length === 0) {
@@ -50,25 +99,25 @@ export default function AdopterPreferencesForm() {
   };
 
   const handleAnimalTypeChange = (type) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       animalTypes: prev.animalTypes.includes(type)
-        ? prev.animalTypes.filter(t => t !== type)
+        ? prev.animalTypes.filter((t) => t !== type)
         : [...prev.animalTypes, type]
     }));
   };
 
   const handleSizeChange = (size) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       sizePreference: prev.sizePreference.includes(size)
-        ? prev.sizePreference.filter(s => s !== size)
+        ? prev.sizePreference.filter((s) => s !== size)
         : [...prev.sizePreference, size]
     }));
   };
 
   const handleDispositionChange = (key) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       disposition: {
         ...prev.disposition,
@@ -83,26 +132,73 @@ export default function AdopterPreferencesForm() {
       return;
     }
 
+    if (!user?.email || user.role !== 'adopter') {
+      setSubmitStatus({
+        type: 'error',
+        message: 'You must be logged in as an adopter to save preferences.',
+      });
+      return;
+    }
+
     setLoading(true);
     setSubmitStatus(null);
 
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    localStorage.setItem('adopterPreferences', JSON.stringify(formData));
-    
-    setSubmitStatus({ 
-      type: 'success', 
-      message: 'Preferences saved successfully!' 
-    });
+    try {
+      const payload = {
+        animalTypes: formData.animalTypes,
+        breeds: formData.breeds,
+        agePreference: formData.agePreference,
+        sizePreference: formData.sizePreference,
+        disposition: formData.disposition,
+        maxDistance: formData.maxDistance,
+        additionalNotes: formData.additionalNotes,
+      };
 
-    setTimeout(() => navigate('/adopter-menu'), 2000);
-    setLoading(false);
+      const response = await fetch(`${API_BASE_URL}/api/preferences/me`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-demo-email': user.email,
+          'x-demo-role': user.role,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.ok) {
+        if (result.details) {
+          setErrors(result.details);
+        }
+
+        setSubmitStatus({
+          type: 'error',
+          message: result.error || 'Failed to save preferences.',
+        });
+        return;
+      }
+
+      setSubmitStatus({
+        type: 'success',
+        message: 'Preferences saved successfully!',
+      });
+
+      setTimeout(() => navigate('/adopter-menu'), 2000);
+    } catch (error) {
+      console.error('Error saving preferences:', error);
+      setSubmitStatus({
+        type: 'error',
+        message: 'Unable to connect to the server. Please try again.',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div style={styles.container}>
       {/* Left Panel - Info */}
-      <div style={styles.leftPanel}>
+       <div style={styles.leftPanel}>
         <div style={styles.leftContent}>
           <h1 style={styles.leftTitle}>Find Your Perfect Match</h1>
           <p style={styles.leftDescription}>
@@ -533,4 +629,3 @@ const styles = {
     transition: 'background-color 0.2s',
   },
 };
-
