@@ -43,13 +43,6 @@ export default function UserTypeSelection() {
                         <button>Continue as Shelter</button>
                     </div>
                 </div>
-
-                <div style={{ marginTop: '20px', fontSize: '12px', color: '#999' }}>
-                    <a href="/adopter-menu" style={{ color: '#999', textDecoration: 'none' }}>Skip to adopter main menu</a>
-                </div>
-                <div style={{ marginTop: '20px', fontSize: '12px', color: '#999' }}>
-                    <a href="/shelter-menu" style={{ color: '#999', textDecoration: 'none' }}>Skip to shelter main menu</a>
-                </div>
             </div>
         </div>
     );
