@@ -40,7 +40,7 @@ export default function MainMenu() {
             <button>Get Started</button>
           </div>
 
-          <div className="card" onClick={() => navigate('/adopter-contact')} style={{ marginBottom: '20px', width: '100%' }}>
+          <div className="card" onClick={() => navigate('/contact')} style={{ marginBottom: '20px', width: '100%' }}>
             <h3>Messages</h3>
             <p>Chat with shelters about available animals</p>
             <button>Open Messages</button>
