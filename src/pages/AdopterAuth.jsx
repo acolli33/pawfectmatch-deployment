@@ -1,13 +1,89 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useAuth } from '../auth/AuthContext.jsx';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+/**
+ * AdopterAuth
+ * 
+ * Authentication page for adopters.
+ * Allows users to sign in or create an account.
+ * 
+ * On successful authentication, sets a demo session
+ * and navigates to the main menu.
+ * @returns {JSX.Element}
+ */
 export default function AdopterAuth() {
     const navigate = useNavigate();
+    const { setSession } = useAuth();
     const [isSignIn, setIsSignIn] = useState(true);
 
-    const handleSubmit = (e) => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    const [submitError, setSubmitError] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    /**
+     * handleSubmit
+     * 
+     * Handles adopter login form submission.
+     * Validates input and sets a demo session.
+     * 
+     * @param {React.FormEvent<HTMLFormElement>} e
+     * @returns 
+     */
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        navigate('/menu');
+        setSubmitError('');
+
+        if (!email || !password) {
+            setSubmitError('Please enter email and password');
+            return;
+        }
+
+        if (!isSignIn) {
+            setSubmitError('Account creation is not available in this Alpha build. Use the provided test account.');
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/auth/demo-login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email,
+                    password,
+                    role: 'adopter',
+                }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.ok) {
+                setSubmitError(result.error || 'Unable to sign in');
+                return;
+            }
+
+            // Store authenticated session using AuthContext
+            setSession(
+                result.data.user,
+                result.data.token
+            );
+
+            // Redirect to new adopter menu route
+            navigate('/adopter-menu');
+        } catch (error) {
+            console.error('Adopter login failed:', error);
+            setSubmitError('Unable to connect to the server. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -36,12 +112,14 @@ export default function AdopterAuth() {
 
                 <div className="auth-tabs">
                     <button 
+                        type="button"
                         className={isSignIn ? 'active' : ''}
                         onClick={() => setIsSignIn(true)}
                     >
                         Sign In
                     </button>
                     <button 
+                        type="button"
                         className={!isSignIn ? 'active' : ''}
                         onClick={() => setIsSignIn(false)}
                     >
@@ -50,26 +128,60 @@ export default function AdopterAuth() {
                 </div>
 
                 <form onSubmit={handleSubmit}>
-                    <label>Email</label>
-                    <input type="email" placeholder="you@example.com" required />
+                    <label htmlFor="adopter-email">Email</label>
+                    <input
+                        id="adopter-email"
+                        type="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
 
-                    <label>Password</label>
-                    <input type="password" placeholder="******" required />
+                    <label htmlFor="adopter-password">Password</label>
+                    <input
+                        id="adopter-password"
+                        type="password"
+                        placeholder="******"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
 
                     {isSignIn && (
                         <div className="checkbox">
-                            <input type="checkbox"/>
-                            <span>Remember me</span>
+                            <input id="remember-adopter" type="checkbox"/>
+                            <label htmlFor="remember-adopter">Remember Me</label>
                         </div>
                     )}
 
-                    <button type="submit">
-                        {isSignIn ? 'Sign In as Adopter' : 'Create Adopter Account'}
+                    {submitError && (
+                        <div
+                            style={{
+                                marginTop: '12px',
+                                padding: '10px 12px',
+                                borderRadius: '6px',
+                                border: '1px solid #dc2626',
+                                background: '#fee2e2',
+                                color: '#991b1b',
+                                fontSize: '14px',
+                            }}
+                        >
+                            {submitError}
+                        </div>
+                    )}
+
+                    <button type="submit" disabled={loading}>
+                        {loading
+                            ? 'Loading...'
+                            : isSignIn
+                                ? 'Sign In as Adopter'
+                                : 'Create Adopter Account'}
                     </button>
                 </form>
 
                 <div style={{ marginTop: '20px', padding: '10px', background: '#fff9e6', borderRadius: '6px', fontSize: '12px' }}>
-                    Demo Mode: Click the button to access the app directly
+                    Demo Mode: use an adopter email that already exists in Supabase (adopter@example.com)
                 </div>
             </div>
         </div>

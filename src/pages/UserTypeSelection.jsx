@@ -36,16 +36,12 @@ export default function UserTypeSelection() {
                     </div>
 
                     <div className="card" onClick={() => navigate('/shelter')}>
-                        <h3>I'm a Shelter</h3>
+                        <h3>I'm a Shelter Admin</h3>
                         <p>
                             List pets, manage adoption applications, and help animals find loving homes.
                         </p>
                         <button>Continue as Shelter</button>
                     </div>
-                </div>
-
-                <div style={{ marginTop: '20px', fontSize: '12px', color: '#999' }}>
-                    <a href="/menu" style={{ color: '#999', textDecoration: 'none' }}>Skip to main menu</a>
                 </div>
             </div>
         </div>

@@ -1,8 +1,26 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext.jsx';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+
+    reader.readAsDataURL(file);
+  });
+}
 
 export default function AnimalProfileForm() {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const { user } = useAuth();
+  const isEditMode = !!id;
+
   const [formData, setFormData] = useState({
     name: '',
     type: '',
@@ -28,6 +46,63 @@ export default function AnimalProfileForm() {
   const [submitStatus, setSubmitStatus] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const loadAnimal = async () => {
+      if (!isEditMode || !user?.email || user.role !== 'shelter') return;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/animals/${id}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'x-demo-email': user.email,
+            'x-demo-role': user.role,
+          },
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.ok || !result.data) return;
+
+        const animal = result.data;
+
+        setFormData({
+          name: animal.name || '',
+          type: animal.type || '',
+          breed: animal.breed || '',
+          ageYears: animal.age ? Math.floor(animal.age) : '',
+          ageMonths: '',
+          sex: animal.sex || '',
+          size: animal.size || '',
+          weightLbs: '',
+          color: '',
+          disposition: {
+            goodWithChildren: animal.good_with_children || false,
+            goodWithOtherAnimals: animal.good_with_other_animals || false,
+            mustBeLeashed: animal.must_be_leashed || false,
+          },
+          availability: animal.availability || 'available',
+          description: animal.description || '',
+          medicalNotes: animal.special_needs || '',
+        });
+
+        if (animal.primary_photo_url) {
+          setPhotos([
+            {
+              id: Date.now(),
+              preview: animal.primary_photo_url,
+              dataUrl: animal.primary_photo_url,
+              name: 'existing-photo',
+            },
+          ]);
+        }
+      } catch (error) {
+        console.error('Failed to load animal:', error);
+      }
+    };
+
+    loadAnimal();
+  }, [id, isEditMode, user]);
+
   const validateForm = () => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = 'Animal name is required';
@@ -36,6 +111,7 @@ export default function AnimalProfileForm() {
       newErrors.age = 'Please provide at least age in years or months';
     }
     if (!formData.sex) newErrors.sex = 'Sex is required';
+    if (!formData.size) newErrors.size = 'Size is required';
     if (!formData.description.trim()) {
       newErrors.description = 'Description is required';
     } else if (formData.description.length < 50) {
@@ -49,25 +125,33 @@ export default function AnimalProfileForm() {
   };
 
   const handleDispositionChange = (key) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       disposition: { ...prev.disposition, [key]: !prev.disposition[key] }
     }));
   };
 
-  const handlePhotoUpload = (e) => {
+  const handlePhotoUpload = async (e) => {
     const files = Array.from(e.target.files);
-    const newPhotos = files.map(file => ({
-      id: Date.now() + Math.random(),
-      file,
-      preview: URL.createObjectURL(file),
-      name: file.name
-    }));
-    setPhotos(prev => [...prev, ...newPhotos].slice(0, 5));
+    const processedPhotos = await Promise.all(
+      files.slice(0, 5).map(async (file) => {
+        const dataUrl = await fileToDataUrl(file);
+
+        return {
+          id: Date.now() + Math.random(),
+          file,
+          preview: dataUrl,
+          dataUrl,
+          name: file.name
+        };
+      })
+    );
+
+    setPhotos((prev) => [...prev, ...processedPhotos].slice(0, 5));
   };
 
   const removePhoto = (photoId) => {
-    setPhotos(prev => prev.filter(p => p.id !== photoId));
+    setPhotos((prev) => prev.filter((p) => p.id !== photoId));
   };
 
   const handleSubmit = async () => {
@@ -76,21 +160,65 @@ export default function AnimalProfileForm() {
       return;
     }
 
+    if (!user?.email || user.role !== 'shelter') {
+      setSubmitStatus({
+        type: 'error',
+        message: 'You must be logged in as a shelter to create an animal profile.',
+      });
+      return;
+    }
+
     setLoading(true);
     setSubmitStatus(null);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const animals = JSON.parse(localStorage.getItem('animals') || '[]');
-    animals.push({ ...formData, photos: photos.map(p => p.name), id: Date.now() });
-    localStorage.setItem('animals', JSON.stringify(animals));
-    
-    setSubmitStatus({ 
-      type: 'success', 
-      message: `${formData.name}'s profile created successfully!` 
-    });
 
-    setTimeout(() => navigate('/menu'), 2000);
-    setLoading(false);
+    try {
+      const payload = {
+        ...formData,
+        photos: photos.map((p) => p.dataUrl),
+      };
+
+      const response = await fetch(
+        isEditMode ? `${API_BASE_URL}/api/animals/${id}` : `${API_BASE_URL}/api/animals`,
+        {
+          method: isEditMode ? 'PUT' : 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-demo-email': user.email,
+            'x-demo-role': user.role,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok || !result.ok) {
+        if (result.details) {
+          setErrors(result.details);
+        }
+
+        setSubmitStatus({
+          type: 'error',
+          message: result.error || 'Failed to create animal profile.',
+        });
+        return;
+      }
+
+      setSubmitStatus({
+        type: 'success',
+        message: `${formData.name}'s profile ${isEditMode ? 'updated' : 'created'} successfully!`,
+      });
+
+      setTimeout(() => navigate('/shelter-listings'), 2000);
+    } catch (error) {
+      console.error('Error creating animal profile:', error);
+      setSubmitStatus({
+        type: 'error',
+        message: 'Unable to connect to the server. Please try again.',
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -98,7 +226,7 @@ export default function AnimalProfileForm() {
       {/* Left Panel - Info */}
       <div style={styles.leftPanel}>
         <div style={styles.leftContent}>
-          <h1 style={styles.leftTitle}>Create Animal Profile</h1>
+          <h1 style={styles.leftTitle}>{isEditMode ? 'Edit Animal Profile' : 'Create Animal Profile'}</h1>
           <p style={styles.leftDescription}>
             Add a new animal to your shelter's adoption listings. Complete profiles help potential adopters make informed decisions.
           </p>
@@ -133,8 +261,8 @@ export default function AnimalProfileForm() {
             </ul>
           </div>
 
-          <button onClick={() => navigate('/menu')} style={styles.backButton}>
-            Back to Menu
+          <button onClick={() => navigate('/shelter-listings')} style={styles.backButton}>
+            Back to Listings
           </button>
         </div>
       </div>
@@ -264,6 +392,7 @@ export default function AnimalProfileForm() {
                 <option value="large">Large (50-100 lbs)</option>
                 <option value="extra-large">Extra Large (100+ lbs)</option>
               </select>
+              {errors.size && <p style={styles.errorText}>{errors.size}</p>}
             </div>
 
             <div style={styles.section}>
@@ -427,11 +556,13 @@ export default function AnimalProfileForm() {
                 cursor: loading ? 'not-allowed' : 'pointer',
               }}
             >
-              {loading ? 'Creating Profile...' : 'Create Animal Profile'}
+              {loading
+                ? (isEditMode ? 'Saving Changes...' : 'Creating Profile...')
+                : (isEditMode ? 'Save Changes' : 'Create Animal Profile')}
             </button>
             <button
               type="button"
-              onClick={() => navigate('/menu')}
+              onClick={() => navigate('/shelter-listings')}
               style={styles.cancelButton}
             >
               Cancel
