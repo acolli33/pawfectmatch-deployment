@@ -1,6 +1,7 @@
 // This code was partially developed with the help of ChatGPT(GenAI).
 // The code was reviewed, modified, and tested before use.
 
+import { useAuth } from '../auth/AuthContext.jsx';
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
@@ -13,6 +14,7 @@ import {
 
 export default function ContactPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [threads, setThreads] = useState([]); //左側：スレッド一覧
   const [activeChatId, setActiveChatId] = useState(null); //右側：今開いてるチャットのID
@@ -200,7 +202,7 @@ export default function ContactPage() {
 
         {/* Back Button */}
         <button
-          onClick={() => navigate("/menu")}
+          onClick={() => navigate(user?.role === "adopter" ? "/adopter-menu" : "/shelter-menu")}
           style={styles.backButton}
         >
           ← Back to Main Menu

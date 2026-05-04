@@ -70,7 +70,7 @@ export default function ShelterMainMenu() {
             <button>Manage Animals</button>
           </div>
 
-          <div className="card" onClick={() => navigate('/shelter-contact')} style={{ marginBottom: '20px', width: '100%' }}>
+          <div className="card" onClick={() => navigate('/contact')} style={{ marginBottom: '20px', width: '100%' }}>
             <h3>Messages</h3>
             <p>View and respond to messages from potential adopters.</p>
             <button>Open Messages</button>
