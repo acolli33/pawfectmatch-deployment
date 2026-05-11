@@ -85,6 +85,15 @@ router.get('/threads', requireAuth, async (req, res) => {
       `
       select
         mt.*,
+        shelter.user_id as shelter_user_id,
+        (
+          select count(*)
+          from messages m
+          where m.thread_id = mt.id
+            and m.read = false
+            and m.sender_id != $1
+        ) as unread_count,
+
         case
           when mt.adopter_id = $1
             then coalesce(shelter_profile.full_name, shelter.organization_name, shelter.email)
@@ -161,6 +170,47 @@ router.get('/threads/:id', requireAuth, async (req, res) => {
   }
 });
 
+router.patch('/threads/:id/read', requireAuth, async (req, res) => {
+    const userContext = await getUserContext(req.user.email);
+    const { profile } = userContext;
+
+    await query(
+      `
+      update messages
+      set read = true
+      where thread_id = $1
+        and sender_id != $2
+        and read = false
+      `,
+      [req.params.id, profile.id]
+    );
+
+    return sendSuccess(res, { success: true });
+});
+
+router.patch('messages/:id/delivered', requireAuth, async (req, res) => {
+  try {
+    const userContext = await getUserContext(req.user.email);
+    const { profile } = userContext;
+
+    const result = await query(
+      `
+      update messages
+      set delivered = true
+      where id = $1
+        and sender_id != $2
+        and delivered = false
+      returning *
+      `,
+      [req.params.id, profile.id]
+    );
+
+    return sendSuccess(res, result.rows[0]);
+  } catch (err) {
+    return sendError(res, 'Failed to mark delivered');
+  }
+});
+
 router.post('/threads/:id/messages', requireAuth, async (req, res) => {
   const { content } = req.body;
 
@@ -188,9 +238,11 @@ router.post('/threads/:id/messages', requireAuth, async (req, res) => {
       insert into messages (
         thread_id,
         sender_id,
-        content
+        content,
+        delivered,
+        read
       )
-      values ($1,$2,$3)
+      values ($1,$2,$3,false,false)
       returning *
       `,
       [req.params.id, profile.id, content.trim()]
