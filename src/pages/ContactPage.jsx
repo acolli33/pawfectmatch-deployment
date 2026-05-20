@@ -5,113 +5,129 @@ import { useAuth } from '../auth/AuthContext.jsx';
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
-import {
-  getMessages,
-  sendMessage,
-  getThreads,
-  markAsRead,
-} from "../services/chatService";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export default function ContactPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [threads, setThreads] = useState([]); //左側：スレッド一覧
-  const [activeChatId, setActiveChatId] = useState(null); //右側：今開いてるチャットのID
-  const [messages, setMessages] = useState([]); //右のメッセージ一覧
-  const [message, setMessage] = useState(""); //入力欄
-  const [currentUserId, setCurrentUserId] = useState(null); //ログインユーザー
+  const [threads, setThreads] = useState(null);
+  const [activeChatId, setActiveChatId] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [message, setMessage] = useState("");
+  const [loadingThreads, setLoadingThreads] = useState(true);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const [showNewChatModal, setShowNewChatModal] = useState(false);
+  const [availableAnimals, setAvailableAnimals] = useState([]);
 
-  const activeChatIdRef = useRef(activeChatId);
-  const currentUserIdRef = useRef(null);
+  const activeChatIdRef = useRef(null);
 
   useEffect(() => {
     activeChatIdRef.current = activeChatId;
   }, [activeChatId]);
 
   useEffect(() => {
-    currentUserIdRef.current = currentUserId;
-  }, [currentUserId]);
-
-  //ユーザーID取得
-  useEffect(() => {
-    const initUser = async () => {
-      try{
-        const { data, error } = await supabase.auth.getUser();
-
-        if (error || !data?.user) {
-          setCurrentUserId("bbbbbbbb-bbbb-bbbb-bbbb-000000000001");
-          return;
-        }
-        setCurrentUserId(data.user.id);
-      } catch (e) {
-        console.log("fallback user used");
-        setCurrentUserId("bbbbbbbb-bbbb-bbbb-bbbb-000000000001");
-      }
-    };
-    initUser();
-  }, []);
-
-  //thread取得
-  useEffect(() => {
-    if (!currentUserId) return;
-
     const loadThreads = async () => {
-      try {
-        const data = await getThreads(currentUserId);
-        setThreads(data);
-        if (data.length > 0) setActiveChatId(data[0].thread_id);
-      } catch (err) {
-        console.error("Failed to fetch threads:", err);
-      }
-    };
-    loadThreads();
-  }, [currentUserId]);
+      if (!user) return;
 
-  //選択中のスレッドが変わったらメッセージをロード
+      try {
+        setLoadingThreads(true);
+        const res = await fetch(`${API_BASE_URL}/api/messages/threads`, {
+          headers: {
+            "Content-Type": "application/json",
+            "x-demo-email": user.email,
+            "x-demo-role": user.role,
+          },
+        });
+
+        const result = await res.json();
+        if (!res.ok) {
+          console.error(result.error);
+          return
+        }
+
+        setThreads(Array.isArray(result.data) ? result.data : []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingThreads(false);
+      }
+    }; loadThreads();
+  }, [user]);
+
   useEffect(() => {
-    if (!activeChatId) return;
+    if (!activeChatId || !user) return;
     const loadMessages = async () => {
       try {
-        const data = await getMessages(activeChatId);
-        setMessages(data);
-      } catch (err) {
-        console.error("Failed to fetch messages:", err);
+        setLoadingMessages(true);
+        const res = await fetch(
+          `${API_BASE_URL}/api/messages/threads/${activeChatId}`,
+          {
+            headers: {
+              "x-demo-email": user.email,
+              "x-demo-role": user.role,
+            },
+          }
+        );
+
+        const result = await res.json();
+        setMessages(Array.isArray(result.data) ? result.data : []);
+
+        await fetch(
+          `${API_BASE_URL}/api/messages/threads/${activeChatId}/read`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              "x-demo-email": user.email,
+              "x-demo-role": user.role,
+            },
+          }
+        );
+
+        setThreads(prev =>
+          prev.map(t =>
+            t.id === activeChatId
+            ? { ...t, unread_count: 0 }
+            : t
+          )
+        );
+      } finally {
+        setLoadingMessages(false);
       }
     };
     
     loadMessages();
-
-      //ローカルだけ未読数更新
-      setThreads(prev =>
-        prev.map(t =>
-          t.thread_id === activeChatId
-          ? { ...t, unread_count: 0 }
-          : t
-        )
-      );
-  }, [activeChatId]);
+  }, [activeChatId, user]);
 
   const handleSend = async () => {
-    if (!message.trim() || !activeChatId || !currentUserId) return;
+    if (!message.trim() || !activeChatId || !user) return;
 
-    const newMsg = {
-      id: Date.now(), //仮ID
-      thread_id: activeChatId,
-      sender_id: currentUserId,
-      content: message,
-      created_at: new Date().toISOString(),
-    }
+    const res = await fetch(
+      `${API_BASE_URL}/api/messages/threads/${activeChatId}/messages`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-demo-email": user.email,
+          "x-demo-role": user.role,
+        },
+        body: JSON.stringify({ content: message }),
+      }
+    );
 
-    setMessages(prev => [...prev, newMsg]);
-    setMessage("")
+    const result = await res.json();
+    const newMessage = result.data;
+    
+    setMessage("");
 
-    await sendMessage(activeChatId, message, currentUserId);
-
+    setMessages(prev => [...prev, newMessage]);
   };
 
-  //Realtime追加
   useEffect(() => {
+    if (!user) return;
+
     const channel = supabase
     .channel("messages-realtime")
     .on(
@@ -124,42 +140,60 @@ export default function ContactPage() {
       async (payload) => {
         const newMessage = payload.new;
         const activeChatId = activeChatIdRef.current;
-        const currentUserId = currentUserIdRef.current;
 
-        //開いてるチャットなら追加
-        if (newMessage.thread_id === activeChatId && newMessage.sender_id !== currentUserId) {
-          setMessages(prev => {
-            if (prev.some(m => m.id === newMessage.id)) return prev;
-            return [...prev, newMessage];
-          });  
+        if (newMessage.sender_id !== user.id) {
+          await fetch(
+            `${API_BASE_URL}/api/messages/${newMessage.id}/delivered`,
+            {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+                "x-demo-email": user.email,
+                "x-demo-role": user.role,
+              },
+            }
+          );
         }
+        if (newMessage.thread_id === activeChatIdRef.current) {
+          const res = await fetch(
+            `${API_BASE_URL}/api/messages/threads/${activeChatIdRef.current}`,
+            {
+              headers: {
+                "x-demo-email": user.email,
+                "x-demo-role": user.role,
+              },
+            }
+          );
+          const result = await res.json();
+          setMessages(Array.isArray(result.data) ? result.data: []);
+      }
 
-        //スレッド更新（未読＋順番）
-        setThreads(prev =>
-          prev
-            .map(thread => {
-              if (thread.thread_id === newMessage.thread_id) {
-                const isMine = newMessage.sender_id === currentUserId;
-                const isActive = thread.thread_id === activeChatId;
+        setThreads(prev => {
+          const exists = prev.some(
+            t => t.id === newMessage.thread_id
+          );
 
-                return {
-                  ...thread,
+          if (!exists) {
+            return prev;
+          }
+
+          const updated = prev.map(t => 
+              t.id === newMessage.thread_id
+                ? {
+                  ...t,
+                  last_message: newMessage.content,
                   last_message_time: newMessage.created_at,
-
-                  unread_count: isMine
-                    ? thread.unread_count
-                    : isActive
-                    ? 0
-                    : thread.unread_count + 1,
-                };
-              }
-              return thread;
-            })
-           .sort(
+                  unread_count:
+                    t.id === activeChatId ? 0 : (t.unread_count || 0) + 1,
+                }
+                : t
+            );
+            
+            return [...updated].sort(
             (a, b) =>
               new Date(b.last_message_time || 0) - new Date(a.last_message_time || 0)
-           ) 
-        );
+           );
+       });
       }
     )
 
@@ -171,35 +205,99 @@ export default function ContactPage() {
         table: "messages",
       },
       (payload) => {
-        const updated = payload.new;
+        const updatedMessage = payload.new;
 
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === updated.id ? { ...m, read: updated.read } : m
+        setMessages(prev =>
+          prev.map(m => 
+            m.id === updatedMessage.id
+            ? updatedMessage
+            : m
           )
         );
       }
     )
-
     .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [user]);
 
-  useEffect(() => {
-    if (!activeChatId || !currentUserId) return;
+  const loadAvailableAnimals = async () => {
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/messages/available-animals`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-demo-email": user.email,
+            "x-demo-role": user.role,
+          },
+        }
+      );
 
-    markAsRead(activeChatId, currentUserId);
+      const result = await res.json();
 
-  }, [activeChatId, currentUserId]);
+      setAvailableAnimals(result.data || []);
+
+      setShowNewChatModal(true);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleCreateThread = async (animalId) => {
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/messages/threads`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-demo-email": user.email,
+            "x-demo-role": user.role,
+          },
+          body: JSON.stringify({
+            animal_id: animalId,
+          }),
+        }
+      );
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        console.error(result.error);
+        return;
+      }
+
+      const newThread = result.data;
+
+      setThreads(prev => {
+        const exists = prev.some(t => t.id === newThread.id);
+        
+        if (exists) {
+          return prev;
+        }
+        
+        return [newThread, ...prev];
+      });
+
+      setActiveChatId(newThread.id);
+
+      setShowNewChatModal(false);
+
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
+    <>
     <div style={styles.container}>
       {/* Left side: Chat list */}
       <div style={styles.leftPane}>
 
+      <div style={styles.threadSection}>
         {/* Back Button */}
         <button
           onClick={() => navigate(user?.role === "adopter" ? "/adopter-menu" : "/shelter-menu")}
@@ -209,22 +307,24 @@ export default function ContactPage() {
         </button>
 
         {/* Thread list */}
-        {threads.map(thread => (
-          <div
-            key={thread.thread_id}
-            onClick={() => setActiveChatId(thread.thread_id)}
-            style={{
-              padding: "12px 16px",
-              cursor: "pointer",
-              backgroundColor:
-                thread.thread_id === activeChatId ? "#e5e7eb" : "#fff",
-              borderBottom: "1px solid #d1d5db",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center"
-          }}
-          >
-            {/* 左側のanimal情報 */}
+        <div style={styles.threadList}>
+          {threads?.map(thread => (
+            <div
+              key={thread.id}
+              onClick={() => setActiveChatId(thread.id)}
+              style={{
+                padding: "12px 16px",
+                cursor: "pointer",
+                backgroundColor:
+                  thread.id === activeChatId ? "#EADFD2" : "transparent",
+                color: "#2C2C34",
+                borderBottom: "1px solid rgba(255,255,255,0.12)",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center"
+              }}
+            >
+            {/* Animal info on the thread */}
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <img 
                 src={thread.primary_photo_url}
@@ -236,10 +336,14 @@ export default function ContactPage() {
                   objectFit: "cover",
                 }} 
               />
-
             {/* Name */}
-            <div>
-              {thread.other_user_name || "unknown Animal"}
+            <div style={{ color: "#2C2C34", fontWeight: "500" }}>
+              {thread.animal_name || "Unknown Animal"}
+              {thread.other_party_name && (
+                <span style={{ fontWeight: "400", fontSize: "13px" }}>
+                  {" "}({thread.other_party_name})
+                </span>
+              )}
             </div>
           </div>
 
@@ -247,7 +351,7 @@ export default function ContactPage() {
             {thread.unread_count > 0 && (
                 <div
                   style={{
-                    backgroundColor: "#2563eb",
+                    backgroundColor: "#B46D92",
                     minWidth: "18px",
                     height: "18px",
                     padding: "0 6px",
@@ -265,21 +369,107 @@ export default function ContactPage() {
           </div>
         ))}
       </div>
+      </div>
+
+      {user?.role === "adopter" && (
+        <div style={styles.newConversationContainer}>
+          <button
+          style={styles.newConversationButton}
+          onClick={loadAvailableAnimals}
+          >
+            + New Conversation
+          </button>
+          </div>
+        )}
+      </div>
       
       {/* Right side: Selected chat */}
       <div style={styles.rightPane}>
-            <div style={styles.chatHeader}>
-              <strong>Chat</strong>
+        <div style={styles.chatHeader}>
+          <strong>Chat</strong>
+        </div>
+      <div style={styles.chatBox}>
+        {loadingThreads || threads === null ? (
+          <div style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100%",
+            color: "#800",
+            fontSize: "16px"
+          }}>
+            Loading conversations...
+          </div>
+        ) : user?.role === "shelter" && threads.length === 0 ? (
+          <div style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100%",
+            color: "#800",
+            fontSize: "16px"
+          }}>
+            No conversation history with adopters.
+          </div>
+        ) : !activeChatId ? (
+            <div style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100%",
+              color: "#800",
+              fontSize: "16px"
+            }}>
+              Please select a conversation <br />
+              from the thread list on the left.
             </div>
+          ) : loadingMessages ? (
+            <div style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100%",
+              color: "#800",
+              fontSize: "16px"
+            }}>
+              Loading messages...
+            </div>
+          ) : messages.length === 0 ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              flexDirection: "column",
+              height: "100%",
+              color: "#800",
+              fontSize: "16px",
+              textAlign: "center",
+              lineHeight: "1.6",
+            }}
+          >
+            No messages yet. <br />
+            Start the conversation by sending a message.
+          </div>
+          ) : (
+            messages.map((msg, idx) => {
+              const activeThread = threads.find(
+                t => t.id === activeChatId
+              );
 
-            <div style={styles.chatBox}>
-              {messages.map((msg, idx) => (
+              const myId = user?.role === "adopter"
+                ? activeThread?.adopter_id
+                : activeThread?.shelter_user_id;
+
+              const isMine = msg.sender_id === myId;
+
+              return (
                 <div
                   key={idx}
                   style={{
                     display: "flex",
                     justifyContent:
-                      msg.sender_id === currentUserId ? "flex-end" : "flex-start",
+                      isMine ? "flex-end" : "flex-start",
                     marginBottom: "10px",
                   }}
                 >
@@ -287,26 +477,34 @@ export default function ContactPage() {
                     style={{
                       ...styles.message,
                       backgroundColor:
-                        msg.sender_id === currentUserId ? "#2563eb" : "#e5e7eb",
+                      isMine ? "#2F3A56" : "#D7C3AE",
                       color:
-                        msg.sender_id === currentUserId ? "#fff" : "#000",
+                      isMine ? "#FFF7ED" : "#2C2C34",
                     }}
                   >
                     <div>{msg.content}</div>
                     <div style={{ fontSize: "11px", marginTop: "4px", opacity: 1, 
-                      color: msg.sender_id === currentUserId ? "#ffffff" : "#1f2937"}}>
+                      color: isMine ? "#ffffff" : "#1f2937",}}>
                       {new Date(msg.created_at).toLocaleTimeString()}
-                      {msg.sender_id === currentUserId && (
-                        <span style={{ marginLeft: "6px", fontSize: "8px", opacity: "0.7px"}}>
-                          {msg.read ? "Read" : "Sent"}
-                        </span>
+                      {isMine && (
+                        <span style={{ marginLeft: "6px", fontSize: "8px", opacity: 0.7}}>
+                          {msg.read 
+                          ? "Read"
+                          : msg.delivered
+                          ? "Delivered"
+                          : "Sent"
+                          }
+                          </span>
                       )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                );
+              })
+            )}
+          </div>
 
+          {activeChatId && (
             <div style={styles.inputContainer}>
               <label htmlFor="messageInput" style={{ display: "none" }}>
                 Message
@@ -323,9 +521,79 @@ export default function ContactPage() {
                 Send
               </button>
             </div>
+            )}
       </div>
-    </div>
-  );
+      {showNewChatModal && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modal}>
+            <div style={styles.modalHeader}>
+            <h3 style={styles.modalTitle}>
+              Start New Conversation
+            </h3>
+            </div>
+
+            <div style={styles.modalList}>
+              {availableAnimals.length === 0 ? (
+                <div style={{ padding: "20px"}}>
+                No available animals.
+                </div>
+              ) : (
+                availableAnimals.map(animal => (
+                  <div
+                    key={animal.id}
+                    onClick={() => handleCreateThread(animal.id)}
+                    style={styles.animalCard}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "#F3E8DC";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                    }}
+                  >
+
+                  <img
+                    src={animal.primary_photo_url}
+                    alt={animal.name}
+                    style={styles.animalImage}
+                  />
+
+                  <div style={{ flex: 1 }}>
+                    <div
+                      style={{
+                        fontWeight: "600",
+                        color: "#2C2C34",
+                      }}
+                    >
+                      {animal.name}
+                  </div>
+
+                  <div style={{
+                    fontSize: "13px",
+                    color: "#6B7280",
+                    marginTop: "2px",
+                    }}
+                  >
+                    {animal.breed}
+                  </div>
+                </div>
+              </div>
+              ))
+            )}
+            </div>
+
+            <div style={styles.modalFooter}></div>
+              <button
+                onClick={() => setShowNewChatModal(false)}
+                style={styles.closeButton}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+        </div>
+      </>
+  );    
 }
 
 const styles = {
@@ -334,78 +602,186 @@ const styles = {
     height: "100vh",
     width: "100vw",
     fontFamily: "Arial, sans-serif",
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#FFF7ED",
+    color: "#2C2C34"
   },
   leftPane: {
     width: "320px",
-    borderRight: "1px solid #d1d5db",
-    backgroundColor: "#ffffff",
-    overflowY: "auto",
+    borderRight: "1px solid #D7C3AE",
+    backgroundColor: "#FFF7ED",
     display: "flex",
     flexDirection: "column",
+    color: "#2C2C34", 
+    height: "100vh",
   },
   rightPane: {
     flex: 1,
     display: "flex",
     flexDirection: "column",
-    backgroundColor: "#ffffff",
+    backgroundColor: "#FFF7ED",
   },
   backButton: {
     padding: "14px 16px",
     border: "none",
-    backgroundColor: "#2563eb",
-    color: "#ffffff",
+    backgroundColor: "#2F3A56",
+    color: "#FFF7ED",
     cursor: "pointer",
     fontWeight: "600",
     textAlign: "left",
-    borderBottom: "1px solid #e5e7eb",
+    borderBottom: "1px solid rgba(255,255,255,0.15)",
     marginBottom: "12px",
+    transition: "all 0.2s ease-in-out",
+    fontFamily: "Arial, sans-serif",
   },
   chatHeader: {
-    padding: "16px 20px",
-    borderBottom: "1px solid #e5e7eb",
-    backgroundColor: "#ffffff",
+    padding: "18px 24px",
+    borderBottom: "1px solid #D7C3AE",
+    backgroundColor: "#FFF7ED",
+    color: "#2F3A56",
+    fontSize: "20px",
+    letterSpacing: "0.5px",
   },
   chatBox: {
     flex: 1,
-    padding: "20px",
+    padding: "24px",
     overflowY: "auto",
-    backgroundColor: "#f9fafb",
+    backgroundColor: "#FFF7ED",
   },
   message: {
     maxWidth: "65%",
-    padding: "10px 14px",
-    borderRadius: "12px",
+    padding: "12px 16px",
+    borderRadius: "16px",
     wordBreak: "break-word",
-    boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+    lineHeight: "1.4",
+    fontSize: "15px",
   },
   inputContainer: {
-    padding: "16px 20px",
-    borderTop: "1px solid #e5e7eb",
-    backgroundColor: "#ffffff",
+    padding: "18px 20px",
+    borderTop: "1px solid #D7C3AE",
+    backgroundColor: "#FFF7ED",
     display: "flex",
     gap: "12px",
     alignItems: "flex-end",
   },
   textarea: {
     flex: 1,
-    padding: "10px 12px",
-    borderRadius: "8px",
-    border: "1px solid #d1d5db",
+    padding: "12px 14px",
+    borderRadius: "10px",
+    border: "1px solid #D7C3AE",
     resize: "none",
     fontFamily: "Arial, sans-serif",
-    fontSize: "14px",
+    fontSize: "15px",
     outline: "none",
+    backgroundColor: "#FFF7ED",
+    color: "#2C2C34",
   },
   button: {
     padding: "10px 24px",
-    backgroundColor: "#2563eb",
-    color: "#fff",
+    backgroundColor: "#2F3A56",
+    color: "#FFF7ED",
     border: "none",
     borderRadius: "8px",
     cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: "500",
-    transition: "background-color 0.2s",
+    fontSize: "15px",
+    fontWeight: "600",
+    transition: "all 0.2s ease-in-out",
+    fontFamily: "Arial, sans-serif",
+  },
+  threadSection: {
+    flex: 1,
+    overflowY: "auto",
+    display: "flex",
+    flexDirection: "column",
+  },
+  threadList: {
+    flex: 1,
+    overflowY: "auto",
+  },
+  newConversationContainer: {
+    padding: "16px",
+    borderTop: "1px solid #D7C3AE",
+    backgroundColor: "#FFF7ED",
+    position: "sticky",
+    bottom: 0,
+  },
+  newConversationButton: {
+    width: "100%",
+    padding: "14px",
+    backgroundColor: "#B46D92",
+    color: "#FFF7ED",
+    border: "none",
+    borderRadius: "10px",
+    cursor: "pointer",
+    fontWeight: "600",
+    fontSize: "15px",
+  },
+  animalCard: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    padding: "14px 20px",
+    cursor: "pointer",
+    borderBottom: "1px solid #D7C3AE",
+    transition: "background-color 0.2s ease",
+  },
+  animalImage: {
+    width: "48px",
+    height: "48px",
+    borderRadius: "10px",
+    objectFit: "cover",
+    flexShrink: 0,
+  },
+  closeButton: {
+    width: "100%",
+    padding: "12px",
+    borderRadius: "10px",
+    border: "none",
+    backgroundColor: "2F3A56",
+    color: "#FFF7ED",
+    fontWeight: "600",
+    cursor: "pointer",
+  },
+  modalOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    display: "flex",
+    backgroundColor: "rgba(0,0,0,0.15)",
+    justifyContent: "flex-end",
+    alignItems: "stretch",
+    zIndex: 1000,
+  },
+  modal: {
+    width: "360px",
+    height: "100%",
+    backgroundColor: "FFF7ED",
+    borderLeft: "1px solid #D7C3AE",
+    display: "flex",
+    flexDirection: "column",
+  },
+  modalHeader: {
+    padding: "20px 24px",
+    borderBottom: "1px solid #D7C3AE",
+    backgroundColor: "#FFF7ED",
+    flexShrink: 0,
+  },
+  modalTitle: {
+    margin: 0,
+    fontSize: "20px",
+    color: "#2F3A56",
+  },
+  modalList: {
+    flex: 1,
+    overflowY: "auto",
+    backgroundColor: "#FFF7ED",
+  },
+  modalFooter: {
+    padding: "16px 24px",
+    borderTop: "1px solid #D7C3AE",
+    backgroundColor: "#FFF7ED",
+    flexShrink: 0,
   },
 };
