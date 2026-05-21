@@ -1,17 +1,17 @@
 // This code was partially developed with the help of ChatGPT(GenAI).
 // The code was reviewed, modified, and tested before use.
-
+ 
 import { useAuth } from '../auth/AuthContext.jsx';
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabaseClient";
-
+ 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-
+ 
 export default function ContactPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-
+ 
   const [threads, setThreads] = useState(null);
   const [activeChatId, setActiveChatId] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -20,114 +20,215 @@ export default function ContactPage() {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [availableAnimals, setAvailableAnimals] = useState([]);
-
+ 
   const activeChatIdRef = useRef(null);
-
+  const threadsRef = useRef([]);
+  const userRef = useRef(null);
+  const chatBoxRef = useRef(null);
+ 
   useEffect(() => {
     activeChatIdRef.current = activeChatId;
   }, [activeChatId]);
-
+ 
   useEffect(() => {
-    const loadThreads = async () => {
-      if (!user) return;
+    threadsRef.current = Array.isArray(threads) ? threads : [];
+  }, [threads]);
+ 
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
+ 
+  useEffect(() => {
+    if (!activeChatId) return;
+    if (loadingMessages) return;
+    if (!chatBoxRef.current) return;
+  
+    requestAnimationFrame(() => {
+      if (!chatBoxRef.current) return;
+  
+      chatBoxRef.current.scrollTop =
+        chatBoxRef.current.scrollHeight;
+    });
+  }, [activeChatId, loadingMessages]);
 
-      try {
+  const getHeaders = () => ({
+    "Content-Type": "application/json",
+    "x-demo-email": user?.email,
+    "x-demo-role": user?.role,
+  });
+ 
+  const loadThreads = async (showLoading = false) => {
+    if (!user) return;
+ 
+    try {
+      if (showLoading) {
         setLoadingThreads(true);
-        const res = await fetch(`${API_BASE_URL}/api/messages/threads`, {
-          headers: {
-            "Content-Type": "application/json",
-            "x-demo-email": user.email,
-            "x-demo-role": user.role,
-          },
-        });
-
-        const result = await res.json();
-        if (!res.ok) {
-          console.error(result.error);
-          return
-        }
-
-        setThreads(Array.isArray(result.data) ? result.data : []);
-      } catch (err) {
-        console.error(err);
-      } finally {
+      }
+ 
+      const res = await fetch(`${API_BASE_URL}/api/messages/threads?_=${Date.now()}`, {
+        headers: getHeaders(),
+        cache: "no-store",
+      });
+ 
+      const result = await res.json();
+      if (!res.ok) {
+        console.error(result.error);
+        return;
+      }
+ 
+      setThreads(Array.isArray(result.data) ? result.data : []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      if (showLoading) {
         setLoadingThreads(false);
       }
-    }; loadThreads();
-  }, [user]);
+    }
+  };
+ 
+  const markThreadRead = async (threadId) => {
+    if (!threadId || !user) return;
+ 
+    await fetch(
+      `${API_BASE_URL}/api/messages/threads/${threadId}/read`,
+      {
+        method: "PATCH",
+        headers: getHeaders(),
+      }
+    );
+ 
+    setThreads(prev => {
+      const currentThreads = Array.isArray(prev) ? prev : [];
+ 
+      return currentThreads.map(t =>
+        String(t.id) === String(threadId)
+          ? { ...t, unread_count: 0 }
+          : t
+      );
+    });
+  };
+ 
+  const isAtBottom = () => {
+    if (!chatBoxRef.current) return false;
+  
+    const { scrollTop, scrollHeight, clientHeight } =
+      chatBoxRef.current;
+  
+    return scrollHeight - scrollTop - clientHeight < 30;
+  };
 
+  const getCurrentUserIdForThread = (thread) => {
+    if (!thread || !userRef.current) return null;
+ 
+    return userRef.current.role === "adopter"
+      ? thread.adopter_id
+      : thread.shelter_user_id;
+  };
+ 
+  const updateThreadForNewMessage = (newMessage) => {
+    setThreads(prev => {
+      const currentThreads = Array.isArray(prev) ? prev : [];
+      const currentActiveChatId = activeChatIdRef.current;
+ 
+      const updated = currentThreads.map(t => {
+        if (String(t.id) !== String(newMessage.thread_id)) {
+          return t;
+        }
+ 
+        const currentUserId = getCurrentUserIdForThread(t);
+        const isMine =
+          currentUserId &&
+          String(newMessage.sender_id) === String(currentUserId);
+ 
+        const isActiveThread =
+          String(t.id) === String(currentActiveChatId);
+ 
+        return {
+          ...t,
+          last_message: newMessage.content,
+          last_message_time: newMessage.created_at,
+          unread_count:
+            !isMine && !isActiveThread
+              ? Number(t.unread_count || 0) + 1
+              : isActiveThread
+                ? 0
+                : Number(t.unread_count || 0),
+        };
+      });
+ 
+      return [...updated].sort(
+        (a, b) =>
+          new Date(b.last_message_time || b.updated_at || b.created_at || 0) -
+          new Date(a.last_message_time || a.updated_at || a.created_at || 0)
+      );
+    });
+  };
+ 
+  useEffect(() => {
+    loadThreads(true);
+  }, [user]);
+ 
   useEffect(() => {
     if (!activeChatId || !user) return;
+ 
     const loadMessages = async () => {
       try {
         setLoadingMessages(true);
         const res = await fetch(
-          `${API_BASE_URL}/api/messages/threads/${activeChatId}`,
+          `${API_BASE_URL}/api/messages/threads/${activeChatId}?_=${Date.now()}`,
           {
             headers: {
               "x-demo-email": user.email,
               "x-demo-role": user.role,
             },
+            cache: "no-store",
           }
         );
-
+ 
         const result = await res.json();
         setMessages(Array.isArray(result.data) ? result.data : []);
-
-        await fetch(
-          `${API_BASE_URL}/api/messages/threads/${activeChatId}/read`,
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              "x-demo-email": user.email,
-              "x-demo-role": user.role,
-            },
-          }
-        );
-
-        setThreads(prev =>
-          prev.map(t =>
-            t.id === activeChatId
-            ? { ...t, unread_count: 0 }
-            : t
-          )
-        );
-      } finally {
+       } finally {
         setLoadingMessages(false);
       }
     };
-    
+   
     loadMessages();
   }, [activeChatId, user]);
-
+ 
   const handleSend = async () => {
     if (!message.trim() || !activeChatId || !user) return;
-
+ 
     const res = await fetch(
       `${API_BASE_URL}/api/messages/threads/${activeChatId}/messages`,
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-demo-email": user.email,
-          "x-demo-role": user.role,
-        },
+        headers: getHeaders(),
         body: JSON.stringify({ content: message }),
       }
     );
-
+ 
     const result = await res.json();
     const newMessage = result.data;
-    
+   
     setMessage("");
-
-    setMessages(prev => [...prev, newMessage]);
+ 
+    setMessages(prev => {
+      const currentMessages = Array.isArray(prev) ? prev : [];
+      const exists = currentMessages.some(m => String(m.id) === String(newMessage.id));
+ 
+      if (exists) {
+        return currentMessages;
+      }
+ 
+      return [...currentMessages, newMessage];
+    });
+ 
+    updateThreadForNewMessage(newMessage);
   };
-
+ 
   useEffect(() => {
     if (!user) return;
-
+ 
     const channel = supabase
     .channel("messages-realtime")
     .on(
@@ -140,63 +241,54 @@ export default function ContactPage() {
       async (payload) => {
         const newMessage = payload.new;
         const activeChatId = activeChatIdRef.current;
-
-        if (newMessage.sender_id !== user.id) {
+ 
+        if (!newMessage) return;
+ 
+        const currentThreads = threadsRef.current;
+        const messageThread = currentThreads.find(
+          t => String(t.id) === String(newMessage.thread_id)
+        );
+ 
+        if (!messageThread) {
+          await loadThreads(false);
+          return;
+        }
+ 
+        const currentUserId = getCurrentUserIdForThread(messageThread);
+        const isMine =
+          currentUserId &&
+          String(newMessage.sender_id) === String(currentUserId);
+ 
+        if (!isMine) {
           await fetch(
             `${API_BASE_URL}/api/messages/${newMessage.id}/delivered`,
             {
               method: "PATCH",
-              headers: {
-                "Content-Type": "application/json",
-                "x-demo-email": user.email,
-                "x-demo-role": user.role,
-              },
+              headers: getHeaders(),
             }
           );
         }
-        if (newMessage.thread_id === activeChatIdRef.current) {
+ 
+        if (String(newMessage.thread_id) === String(activeChatId)) {
           const res = await fetch(
-            `${API_BASE_URL}/api/messages/threads/${activeChatIdRef.current}`,
+            `${API_BASE_URL}/api/messages/threads/${activeChatIdRef.current}?_=${Date.now()}`,
             {
               headers: {
                 "x-demo-email": user.email,
                 "x-demo-role": user.role,
               },
+              cache: "no-store",
             }
           );
           const result = await res.json();
-          setMessages(Array.isArray(result.data) ? result.data: []);
-      }
-
-        setThreads(prev => {
-          const exists = prev.some(
-            t => t.id === newMessage.thread_id
-          );
-
-          if (!exists) {
-            return prev;
-          }
-
-          const updated = prev.map(t => 
-              t.id === newMessage.thread_id
-                ? {
-                  ...t,
-                  last_message: newMessage.content,
-                  last_message_time: newMessage.created_at,
-                  unread_count:
-                    t.id === activeChatId ? 0 : (t.unread_count || 0) + 1,
-                }
-                : t
-            );
-            
-            return [...updated].sort(
-            (a, b) =>
-              new Date(b.last_message_time || 0) - new Date(a.last_message_time || 0)
-           );
-       });
+          setMessages(Array.isArray(result.data) ? result.data : []);
+ 
+        }
+ 
+        updateThreadForNewMessage(newMessage);
       }
     )
-
+ 
     .on(
       "postgres_changes",
       {
@@ -206,10 +298,10 @@ export default function ContactPage() {
       },
       (payload) => {
         const updatedMessage = payload.new;
-
+ 
         setMessages(prev =>
-          prev.map(m => 
-            m.id === updatedMessage.id
+          prev.map(m =>
+            String(m.id) === String(updatedMessage.id)
             ? updatedMessage
             : m
           )
@@ -217,86 +309,117 @@ export default function ContactPage() {
       }
     )
     .subscribe();
-
+ 
     return () => {
       supabase.removeChannel(channel);
     };
   }, [user]);
-
+ 
+  useEffect(() => {
+    if (!user) return;
+ 
+    const interval = setInterval(() => {
+      const currentActiveChatId = activeChatIdRef.current;
+ 
+      loadThreads(false);
+ 
+      if (currentActiveChatId) {
+        fetch(
+          `${API_BASE_URL}/api/messages/threads/${currentActiveChatId}?_=${Date.now()}`,
+          {
+            headers: getHeaders(),
+            cache: "no-store",
+          }
+        )
+          .then(res => res.json())
+          .then(result => {
+            setMessages(Array.isArray(result.data) ? result.data : []);
+          })
+          .catch(err => console.error(err));
+      }
+    }, 1000);
+ 
+    return () => clearInterval(interval);
+  }, [user]);
+ 
   const loadAvailableAnimals = async () => {
     try {
       const res = await fetch(
-        `${API_BASE_URL}/api/messages/available-animals`,
+        `${API_BASE_URL}/api/messages/available-animals?_=${Date.now()}`,
         {
-          headers: {
-            "Content-Type": "application/json",
-            "x-demo-email": user.email,
-            "x-demo-role": user.role,
-          },
+          headers: getHeaders(),
+          cache: "no-store",
         }
       );
-
+ 
       const result = await res.json();
-
+ 
       setAvailableAnimals(result.data || []);
-
+ 
       setShowNewChatModal(true);
     } catch (err) {
       console.error(err);
     }
   };
-
+ 
   const handleCreateThread = async (animalId) => {
     try {
       const res = await fetch(
         `${API_BASE_URL}/api/messages/threads`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-demo-email": user.email,
-            "x-demo-role": user.role,
-          },
+          headers: getHeaders(),
           body: JSON.stringify({
             animal_id: animalId,
           }),
         }
       );
-
+ 
       const result = await res.json();
-
+ 
       if (!res.ok) {
         console.error(result.error);
         return;
       }
-
+ 
       const newThread = result.data;
-
+ 
       setThreads(prev => {
-        const exists = prev.some(t => t.id === newThread.id);
-        
+        const currentThreads = Array.isArray(prev) ? prev : [];
+        const exists = currentThreads.some(t => String(t.id) === String(newThread.id));
+       
         if (exists) {
-          return prev;
+          return currentThreads;
         }
-        
-        return [newThread, ...prev];
+       
+        return [newThread, ...currentThreads];
       });
-
+ 
       setActiveChatId(newThread.id);
-
+ 
       setShowNewChatModal(false);
-
+ 
+      await loadThreads(false);
+ 
     } catch (err) {
       console.error(err);
     }
   };
 
+  const handleChatScroll = async () => {
+    if (!activeChatId) return;
+  
+    if (isAtBottom()) {
+      await markThreadRead(activeChatId);
+    }
+  };
+ 
   return (
     <>
     <div style={styles.container}>
       {/* Left side: Chat list */}
       <div style={styles.leftPane}>
-
+ 
       <div style={styles.threadSection}>
         {/* Back Button */}
         <button
@@ -305,7 +428,7 @@ export default function ContactPage() {
         >
           ← Back to Main Menu
         </button>
-
+ 
         {/* Thread list */}
         <div style={styles.threadList}>
           {threads?.map(thread => (
@@ -316,7 +439,7 @@ export default function ContactPage() {
                 padding: "12px 16px",
                 cursor: "pointer",
                 backgroundColor:
-                  thread.id === activeChatId ? "#EADFD2" : "transparent",
+                  String(thread.id) === String(activeChatId) ? "#EADFD2" : "transparent",
                 color: "#2C2C34",
                 borderBottom: "1px solid rgba(255,255,255,0.12)",
                 display: "flex",
@@ -326,7 +449,7 @@ export default function ContactPage() {
             >
             {/* Animal info on the thread */}
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <img 
+              <img
                 src={thread.primary_photo_url}
                 alt={thread.animal_name}
                 style={{
@@ -334,7 +457,7 @@ export default function ContactPage() {
                   height: "40px",
                   borderRadius: "8px",
                   objectFit: "cover",
-                }} 
+                }}
               />
             {/* Name */}
             <div style={{ color: "#2C2C34", fontWeight: "500" }}>
@@ -346,9 +469,9 @@ export default function ContactPage() {
               )}
             </div>
           </div>
-
+ 
             {/* unread count */}
-            {thread.unread_count > 0 && (
+            {Number(thread.unread_count || 0) > 0 && (
                 <div
                   style={{
                     backgroundColor: "#B46D92",
@@ -360,17 +483,19 @@ export default function ContactPage() {
                     alignItems: "center",
                     justifyContent: "center",
                     color: "#fff",
-                    fontSize: "11px",                 
+                    fontSize: "11px",                
                   }}
                 >
-                {thread.unread_count > 99 ? "99+" : thread.unread_count}
+                {Number(thread.unread_count || 0) > 99
+                  ? "99+"
+                  : Number(thread.unread_count || 0)}
               </div>
             )}
           </div>
         ))}
       </div>
       </div>
-
+ 
       {user?.role === "adopter" && (
         <div style={styles.newConversationContainer}>
           <button
@@ -382,13 +507,13 @@ export default function ContactPage() {
           </div>
         )}
       </div>
-      
+     
       {/* Right side: Selected chat */}
       <div style={styles.rightPane}>
         <div style={styles.chatHeader}>
           <strong>Chat</strong>
         </div>
-      <div style={styles.chatBox}>
+      <div ref={chatBoxRef} style={styles.chatBox} onScroll={handleChatScroll}>
         {loadingThreads || threads === null ? (
           <div style={{
             display: "flex",
@@ -454,18 +579,18 @@ export default function ContactPage() {
           ) : (
             messages.map((msg, idx) => {
               const activeThread = threads.find(
-                t => t.id === activeChatId
+                t => String(t.id) === String(activeChatId)
               );
-
+ 
               const myId = user?.role === "adopter"
                 ? activeThread?.adopter_id
                 : activeThread?.shelter_user_id;
-
-              const isMine = msg.sender_id === myId;
-
+ 
+              const isMine = String(msg.sender_id) === String(myId);
+ 
               return (
                 <div
-                  key={idx}
+                  key={msg.id || idx}
                   style={{
                     display: "flex",
                     justifyContent:
@@ -483,12 +608,12 @@ export default function ContactPage() {
                     }}
                   >
                     <div>{msg.content}</div>
-                    <div style={{ fontSize: "11px", marginTop: "4px", opacity: 1, 
+                    <div style={{ fontSize: "11px", marginTop: "4px", opacity: 1,
                       color: isMine ? "#ffffff" : "#1f2937",}}>
                       {new Date(msg.created_at).toLocaleTimeString()}
                       {isMine && (
                         <span style={{ marginLeft: "6px", fontSize: "8px", opacity: 0.7}}>
-                          {msg.read 
+                          {msg.read
                           ? "Read"
                           : msg.delivered
                           ? "Delivered"
@@ -503,7 +628,7 @@ export default function ContactPage() {
               })
             )}
           </div>
-
+ 
           {activeChatId && (
             <div style={styles.inputContainer}>
               <label htmlFor="messageInput" style={{ display: "none" }}>
@@ -531,7 +656,7 @@ export default function ContactPage() {
               Start New Conversation
             </h3>
             </div>
-
+ 
             <div style={styles.modalList}>
               {availableAnimals.length === 0 ? (
                 <div style={{ padding: "20px"}}>
@@ -550,13 +675,13 @@ export default function ContactPage() {
                       e.currentTarget.style.backgroundColor = "transparent";
                     }}
                   >
-
+ 
                   <img
                     src={animal.primary_photo_url}
                     alt={animal.name}
                     style={styles.animalImage}
                   />
-
+ 
                   <div style={{ flex: 1 }}>
                     <div
                       style={{
@@ -566,7 +691,7 @@ export default function ContactPage() {
                     >
                       {animal.name}
                   </div>
-
+ 
                   <div style={{
                     fontSize: "13px",
                     color: "#6B7280",
@@ -580,8 +705,8 @@ export default function ContactPage() {
               ))
             )}
             </div>
-
-            <div style={styles.modalFooter}></div>
+ 
+            <div style={styles.modalFooter}>
               <button
                 onClick={() => setShowNewChatModal(false)}
                 style={styles.closeButton}
@@ -590,12 +715,13 @@ export default function ContactPage() {
               </button>
             </div>
           </div>
-        )}
+        </div>
+      )}
         </div>
       </>
   );    
 }
-
+ 
 const styles = {
   container: {
     display: "flex",
@@ -611,7 +737,7 @@ const styles = {
     backgroundColor: "#FFF7ED",
     display: "flex",
     flexDirection: "column",
-    color: "#2C2C34", 
+    color: "#2C2C34",
     height: "100vh",
   },
   rightPane: {
@@ -737,7 +863,7 @@ const styles = {
     padding: "12px",
     borderRadius: "10px",
     border: "none",
-    backgroundColor: "2F3A56",
+    backgroundColor: "#2F3A56",
     color: "#FFF7ED",
     fontWeight: "600",
     cursor: "pointer",
@@ -757,7 +883,7 @@ const styles = {
   modal: {
     width: "360px",
     height: "100%",
-    backgroundColor: "FFF7ED",
+    backgroundColor: "#FFF7ED",
     borderLeft: "1px solid #D7C3AE",
     display: "flex",
     flexDirection: "column",
