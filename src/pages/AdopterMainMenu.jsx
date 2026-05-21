@@ -40,6 +40,18 @@ export default function MainMenu() {
             <button>Get Started</button>
           </div>
 
+          <div className="card" onClick={() => navigate('/adopter-listings')} style={{ marginBottom: '20px', width: '100%' }}>
+            <h3>Browse Animal Listings</h3>
+            <p>View matching animals, skip, match, or message shelters</p>
+            <button>Start Browsing</button>
+          </div>
+
+          <div className="card" onClick={() => navigate('/matches')} style={{ marginBottom: '20px', width: '100%' }}>
+            <h3>Matches</h3>
+            <p>View animals you matched with</p>
+            <button>View Matches</button>
+          </div>
+
           <div className="card" onClick={() => navigate('/contact')} style={{ marginBottom: '20px', width: '100%' }}>
             <h3>Messages</h3>
             <p>Chat with shelters about available animals</p>

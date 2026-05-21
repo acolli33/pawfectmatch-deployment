@@ -183,7 +183,7 @@ export default function AdopterPreferencesForm() {
         message: 'Preferences saved successfully!',
       });
 
-      setTimeout(() => navigate('/adopter-menu'), 2000);
+      setTimeout(() => navigate('/adopter-listings'), 2000);
     } catch (error) {
       console.error('Error saving preferences:', error);
       setSubmitStatus({
@@ -262,9 +262,9 @@ export default function AdopterPreferencesForm() {
                   onClick={() => handleAnimalTypeChange(option.value)}
                   style={{
                     ...styles.optionButton,
-                    backgroundColor: formData.animalTypes.includes(option.value) ? '#2563eb' : '#ffffff',
-                    color: formData.animalTypes.includes(option.value) ? '#ffffff' : '#374151',
-                    borderColor: formData.animalTypes.includes(option.value) ? '#2563eb' : '#d1d5db',
+                    backgroundColor: formData.animalTypes.includes(option.value) ? colors.navy : colors.otherTan,
+                    color: formData.animalTypes.includes(option.value) ? colors.cream : colors.text,
+                    borderColor: formData.animalTypes.includes(option.value) ? colors.navy : colors.tan,
                   }}
                 >
                   {option.label}
@@ -420,17 +420,27 @@ export default function AdopterPreferencesForm() {
   );
 }
 
+const colors = {
+  cream: '#FFF7ED',
+  mauve: '#B46D92',
+  navy: '#2F3A56',
+  tan: '#D7C3AE',
+  text: '#2C2C34',
+  softTan: '#EADFD2',
+  otherTan: '#d7c3ae1e',
+};
+
 const styles = {
   container: {
     display: 'flex',
     height: '100vh',
     fontFamily: 'Arial, sans-serif',
-    backgroundColor: '#f9fafb',
+    backgroundColor: colors.otherTan,
   },
   leftPanel: {
     width: '380px',
-    backgroundColor: '#f0f4f8',
-    borderRight: '1px solid #d1d5db',
+    backgroundColor: colors.softTan,
+    borderRight: `1px solid ${colors.tan}`,
     overflowY: 'auto',
   },
   leftContent: {
@@ -439,13 +449,13 @@ const styles = {
   leftTitle: {
     fontSize: '28px',
     fontWeight: 'bold',
-    color: '#1e3a8a',
+    color: colors.navy,
     marginBottom: '16px',
     marginTop: 0,
   },
   leftDescription: {
     fontSize: '15px',
-    color: '#4b5563',
+    color: colors.text,
     lineHeight: '1.6',
     marginBottom: '30px',
   },
@@ -455,22 +465,22 @@ const styles = {
   infoTitle: {
     fontSize: '16px',
     fontWeight: '600',
-    color: '#1e3a8a',
+    color: colors.navy,
     marginBottom: '12px',
     marginTop: 0,
   },
   infoList: {
     margin: 0,
     paddingLeft: '20px',
-    color: '#4b5563',
+    color: colors.text,
     fontSize: '14px',
     lineHeight: '1.8',
   },
   backButton: {
     marginTop: '20px',
     padding: '10px 20px',
-    backgroundColor: '#6b7280',
-    color: 'white',
+    backgroundColor: colors.navy,
+    color: colors.cream,
     border: 'none',
     borderRadius: '6px',
     cursor: 'pointer',
@@ -481,73 +491,78 @@ const styles = {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    backgroundColor: '#ffffff',
+    backgroundColor: colors.cream,
     overflowY: 'auto',
   },
   formHeader: {
     padding: '30px 40px',
-    borderBottom: '1px solid #e5e7eb',
-    backgroundColor: '#ffffff',
+    borderBottom: `1px solid ${colors.navy}`,
+    backgroundColor: colors.otherTan,
   },
   formTitle: {
     fontSize: '24px',
     fontWeight: 'bold',
-    color: '#1e3a8a',
+    color: colors.navy,
     margin: '0 0 8px 0',
   },
   formSubtitle: {
     fontSize: '14px',
-    color: '#6b7280',
+    color: colors.text,
     margin: 0,
   },
   formContent: {
     padding: '40px',
-    maxWidth: '700px',
+    maxWidth: '800px',
   },
   section: {
     marginBottom: '32px',
   },
   label: {
     display: 'block',
-    fontSize: '15px',
+    fontSize: '14px',
     fontWeight: '600',
-    color: '#374151',
-    marginBottom: '8px',
+    color: colors.text,
+    marginBottom: '6px',
   },
   helpText: {
     fontSize: '13px',
-    color: '#6b7280',
+    color: colors.text,
     marginBottom: '8px',
     marginTop: '-4px',
   },
   input: {
     width: '100%',
     padding: '10px 12px',
-    border: '1px solid #d1d5db',
+    border: `1px solid ${colors.tan}`,
     borderRadius: '6px',
     fontSize: '14px',
     boxSizing: 'border-box',
     fontFamily: 'Arial, sans-serif',
+    backgroundColor: colors.otherTan,
+    color: colors.text,
   },
   select: {
     width: '100%',
     padding: '10px 12px',
-    border: '1px solid #d1d5db',
+    border: `1px solid ${colors.tan}`,
     borderRadius: '6px',
     fontSize: '14px',
-    backgroundColor: 'white',
+    backgroundColor: colors.otherTan,
+    color: colors.text,
     cursor: 'pointer',
     fontFamily: 'Arial, sans-serif',
   },
   textarea: {
     width: '100%',
     padding: '10px 12px',
-    border: '1px solid #d1d5db',
+    border: `1px solid ${colors.tan}`,
     borderRadius: '6px',
     fontSize: '14px',
     resize: 'vertical',
     boxSizing: 'border-box',
     fontFamily: 'Arial, sans-serif',
+    backgroundColor: colors.otherTan,
+    color: colors.text,
   },
   buttonGroup: {
     display: 'flex',
@@ -573,30 +588,32 @@ const styles = {
     alignItems: 'center',
     gap: '10px',
     fontSize: '14px',
-    color: '#374151',
+    color: colors.text,
     cursor: 'pointer',
   },
   checkbox: {
     width: '18px',
     height: '18px',
     cursor: 'pointer',
+    accentColor: colors.mauve,
   },
   slider: {
     width: '100%',
     height: '6px',
     cursor: 'pointer',
+    accentColor: colors.mauve,
   },
   sliderLabels: {
     display: 'flex',
     justifyContent: 'space-between',
     fontSize: '12px',
-    color: '#6b7280',
+    color: colors.text,
     marginTop: '8px',
   },
   charCount: {
     textAlign: 'right',
     fontSize: '12px',
-    color: '#6b7280',
+    color: colors.text,
     marginTop: '4px',
   },
   statusMessage: {
@@ -614,18 +631,30 @@ const styles = {
   buttonContainer: {
     marginTop: '40px',
     paddingTop: '24px',
-    borderTop: '1px solid #e5e7eb',
+    borderTop: `1px solid ${colors.tan}`,
   },
   submitButton: {
     width: '100%',
     padding: '14px',
-    backgroundColor: '#2563eb',
-    color: 'white',
+    backgroundColor: colors.navy,
+    color: colors.cream,
     border: 'none',
     borderRadius: '6px',
     fontSize: '15px',
     fontWeight: '600',
     cursor: 'pointer',
     transition: 'background-color 0.2s',
+  },
+  cancelButton: {
+    width: '100%',
+    padding: '14px',
+    backgroundColor: colors.softTan,
+    color: colors.text,
+    border: `2px solid ${colors.tan}`,
+    borderRadius: '6px',
+    fontSize: '15px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    marginTop: '10px',
   },
 };

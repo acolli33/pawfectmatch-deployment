@@ -8,6 +8,8 @@ import AdopterPreferencesForm from './pages/AdopterPreferencesForm';
 import AnimalProfileForm from './pages/AnimalProfileForm';
 import ContactPage from './pages/ContactPage';
 import ShelterListingsPage from './pages/ShelterListingsPage';
+import AdopterListingsPage from './pages/AdopterListingsPage';
+import MatchesPage from './pages/MatchesPage';
 import RoleGuard from './auth/RoleGuard.jsx';
 import './App.css';
 
@@ -36,6 +38,24 @@ function App() {
           element={
             <RoleGuard allowRoles={["adopter"]}>
               <AdopterPreferencesForm />
+            </RoleGuard>
+          }
+        />
+
+        <Route
+          path="/adopter-listings"
+          element={
+            <RoleGuard allowRoles={["adopter"]}>
+              <AdopterListingsPage />
+            </RoleGuard>
+          }
+        />
+
+        <Route
+          path="/matches"
+          element={
+            <RoleGuard allowRoles={["adopter"]}>
+              <MatchesPage />
             </RoleGuard>
           }
         />

@@ -9,6 +9,7 @@ import preferencesRouter from './routes/preferenceRoutes.js';
 import animalsRouter from './routes/animalsRoutes.js';
 import messagingRouter from './routes/messagingRoutes.js';
 import sheltersRouter from './routes/sheltersRoutes.js';
+import swipeRoutes from './routes/swipeRoutes.js';
 
 dotenv.config();
 
@@ -44,6 +45,7 @@ app.use('/api/preferences', preferencesRouter);
 app.use('/api/animals', animalsRouter);
 app.use('/api/messages', messagingRouter);
 app.use('/api/shelters', sheltersRouter);
+app.use('/api/swipes', swipeRoutes);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, async () => {

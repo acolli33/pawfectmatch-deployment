@@ -5,32 +5,27 @@ import { useAuth } from '../auth/AuthContext.jsx';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 function getAvailabilityBadgeStyle(status) {
-  switch (status) {
-    case 'available':
-      return {
-        backgroundColor: '#dbeadf',
-        color: '#355e3b',
-        border: '1px solid #bdd3c2',
-      };
-    case 'pending':
-      return {
-        backgroundColor: '#f3ead7',
-        color: '#7a6230',
-        border: '1px solid #e2d2ae',
-      };
-    case 'adopted':
-      return {
-        backgroundColor: '#eadfd7',
-        color: '#8a5a3b',
-        border: '1px solid #d9c3b3',
-      };
-    default:
-      return {
-        backgroundColor: '#ece8e1',
-        color: '#5f5a52',
-        border: '1px solid #d8d2c8',
-      };
+  if (status === 'available') {
+    return {
+      color: '#355e3b',
+    };
   }
+
+  if (status === 'pending') {
+    return {
+      color: '#7a6230',
+    };
+  }
+
+  if (status === 'adopted') {
+    return {
+      color: '#8a5a3b',
+    };
+  }
+
+  return {
+    color: '#5f5a52',
+  };
 }
 
 export default function ShelterListingsPage() {
@@ -41,6 +36,27 @@ export default function ShelterListingsPage() {
   const [shelterName, setShelterName] = useState('Your Listings');
   const [pageError, setPageError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [openMenuId, setOpenMenuId] = useState(null);
+
+  useEffect(() => {
+    const closeMenu = () => {
+      setOpenMenuId(null);
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        setOpenMenuId(null);
+      }
+    };
+
+    document.addEventListener('click', closeMenu);
+    document.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.removeEventListener('click', closeMenu);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, []);
 
   useEffect(() => {
     const loadPageData = async () => {
@@ -83,6 +99,8 @@ export default function ShelterListingsPage() {
   }, [user]);
 
   const handleDelete = async (animalId) => {
+    setOpenMenuId(null);
+
     if (!window.confirm('Delete this listing?')) return;
 
     try {
@@ -107,6 +125,14 @@ export default function ShelterListingsPage() {
       console.error('Failed to delete listing:', error);
       setPageError('Unable to connect to the server. Please try again.');
     }
+  };
+
+  const toggleMenu = (event, animalId) => {
+    event.stopPropagation();
+
+    setOpenMenuId((currentId) =>
+      currentId === animalId ? null : animalId
+    );
   };
 
   return (
@@ -219,8 +245,6 @@ export default function ShelterListingsPage() {
                         <span
                           style={{
                             display: 'inline-block',
-                            padding: '6px 12px',
-                            borderRadius: '999px',
                             fontSize: '13px',
                             fontWeight: '600',
                             textTransform: 'capitalize',
@@ -237,22 +261,57 @@ export default function ShelterListingsPage() {
                       <p style={{ margin: '4px 0' }}><strong>Size:</strong> {animal.size || 'N/A'}</p>
                     </div>
 
-                    <div style={{ textAlign: 'right' }}>
+                    <div
+                      style={{
+                        position: 'relative',
+                        textAlign: 'right',
+                        minWidth: '44px',
+                      }}
+                      onClick={(event) => event.stopPropagation()}
+                    >
                       <button
-                        onClick={() => navigate(`/animal/${animal.id}/edit`)}
-                        style={{ marginRight: '8px' }}
+                        type="button"
+                        aria-label={`Open actions for ${animal.name}`}
+                        aria-haspopup="menu"
+                        aria-expanded={openMenuId === animal.id}
+                        onClick={(event) => toggleMenu(event, animal.id)}
+                        style={styles.menuButton}
                       >
-                        Edit Listing
+                        ⋯
                       </button>
-                      <button
-                        onClick={() => handleDelete(animal.id)}
-                        style={{
-                          backgroundColor: '#b94b4b',
-                          color: '#ffffff',
-                        }}
-                      >
-                        Delete Listing
-                      </button>
+
+                      {openMenuId === animal.id && (
+                        <div
+                          role="menu"
+                          aria-label={`Actions for ${animal.name}`}
+                          style={styles.dropdownMenu}
+                          onClick={(event) => event.stopPropagation()}
+                        >
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              setOpenMenuId(null);
+                              navigate(`/animal/${animal.id}/edit`);
+                            }}
+                            style={styles.dropdownItem}
+                          >
+                            Edit Listing
+                          </button>
+
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => handleDelete(animal.id)}
+                            style={{
+                              ...styles.dropdownItem,
+                              ...styles.deleteDropdownItem,
+                            }}
+                          >
+                            Delete Listing
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -272,3 +331,50 @@ export default function ShelterListingsPage() {
     </div>
   );
 }
+
+const styles = {
+  menuButton: {
+    padding: '4px 8px',
+    marginTop: 0,
+    border: 'none',
+    backgroundColor: 'transparent',
+    color: '#2F3A56',
+    cursor: 'pointer',
+    fontSize: '26px',
+    fontWeight: '700',
+    lineHeight: 1,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dropdownMenu: {
+    position: 'absolute',
+    top: '32px',
+    right: 0,
+    zIndex: 20,
+    width: '160px',
+    backgroundColor: '#ffffff',
+    border: '1px solid #D7C3AE',
+    borderRadius: '10px',
+    boxShadow: '0 8px 20px rgba(47, 58, 86, 0.16)',
+    overflow: 'hidden',
+    textAlign: 'left',
+  },
+  dropdownItem: {
+    width: '100%',
+    display: 'block',
+    padding: '12px 14px',
+    marginTop: 0,
+    border: 'none',
+    borderRadius: 0,
+    backgroundColor: '#ffffff',
+    color: '#2C2C34',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '600',
+    textAlign: 'left',
+  },
+  deleteDropdownItem: {
+    color: '#b94b4b',
+  },
+};
