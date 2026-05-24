@@ -179,21 +179,51 @@ router.get('/threads/:id', requireAuth, async (req, res) => {
 });
 
 router.patch('/threads/:id/read', requireAuth, async (req, res) => {
+  try {
     const userContext = await getUserContext(req.user.email);
-    const { profile } = userContext;
 
-    await query(
+    if (userContext.error) {
+      return sendError(res, userContext.error, userContext.status);
+    }
+
+    const { profile, shelter } = userContext;
+
+    const thread = await getThreadForUser(
+      req.params.id,
+      profile.id,
+      shelter?.id || null
+    );
+
+    if (!thread) {
+      return sendError(res, 'Thread not found', 404);
+    }
+
+    const result = await query(
       `
       update messages
       set read = true
       where thread_id = $1
         and sender_id != $2
         and read = false
+      returning id
       `,
       [req.params.id, profile.id]
     );
 
-    return sendSuccess(res, { success: true });
+    return sendSuccess(res, {
+      success: true,
+      updated_count: result.rowCount,
+      updated_ids: result.rows.map(r => r.id),
+    });
+  } catch (error) {
+    console.error('Failed to mark thread as read:', {
+      message: error.message,
+      detail: error.detail,
+      code: error.code,
+    });
+
+    return sendError(res, 'Failed to mark thread as read');
+  }
 });
 
 router.patch('/messages/:id/delivered', requireAuth, async (req, res) => {
