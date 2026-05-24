@@ -38,19 +38,20 @@ export default function ContactPage() {
     userRef.current = user;
   }, [user]);
  
-  useEffect(() => {
+useEffect(() => {
     if (!activeChatId) return;
     if (loadingMessages) return;
     if (!chatBoxRef.current) return;
-  
+    if (!messages.length) return;
+
     requestAnimationFrame(() => {
       if (!chatBoxRef.current) return;
-  
+
       chatBoxRef.current.scrollTop =
         chatBoxRef.current.scrollHeight;
     });
-  }, [activeChatId, loadingMessages]);
-
+  }, [activeChatId, loadingMessages, messages.length]);
+  
   const getHeaders = () => ({
     "Content-Type": "application/json",
     "x-demo-email": user?.email,
@@ -194,6 +195,11 @@ export default function ContactPage() {
    
     loadMessages();
   }, [activeChatId, user]);
+
+  useEffect(() => {
+    if (!activeChatId || !user || loadingMessages) return;
+    markThreadRead(activeChatId);
+  }, [activeChatId, loadingMessages, user]);
  
   const handleSend = async () => {
     if (!message.trim() || !activeChatId || !user) return;
