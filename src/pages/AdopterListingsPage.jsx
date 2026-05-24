@@ -55,16 +55,6 @@ function showValue(value) {
   return value ? String(value) : 'Any';
 }
 
-function getAnimalLocation(animal) {
-  if (animal.location) return animal.location;
-  if (animal.city && animal.state) return `${animal.city}, ${animal.state}`;
-  if (animal.shelter_location) return animal.shelter_location;
-  if (animal.shelter_city && animal.shelter_state) {
-    return `${animal.shelter_city}, ${animal.shelter_state}`;
-  }
-
-  return 'N/A';
-}
 
 export default function AdopterListingsPage() {
   const navigate = useNavigate();
@@ -455,7 +445,6 @@ export default function AdopterListingsPage() {
                 <p style={styles.detail}><strong>Sex:</strong> {currentAnimal.sex}</p>
                 <p style={styles.detail}><strong>Size:</strong> {currentAnimal.size || 'N/A'}</p>
                 <p style={styles.detail}><strong>Age:</strong> {currentAnimal.age || 'N/A'}</p>
-                <p style={styles.detail}><strong>Location:</strong> {getAnimalLocation(currentAnimal)}</p>
 
                 <p style={{ marginTop: '14px', color: '#555' }}>
                   {currentAnimal.description || 'No description provided.'}
