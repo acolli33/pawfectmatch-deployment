@@ -67,6 +67,7 @@ export default function ShelterListingsPage() {
           'Content-Type': 'application/json',
           'x-demo-email': user.email,
           'x-demo-role': user.role,
+          "x-demo-token": localStorage.getItem("pm_token"),
         };
 
         const [animalsResponse, shelterResponse] = await Promise.all([
@@ -110,6 +111,7 @@ export default function ShelterListingsPage() {
           'Content-Type': 'application/json',
           'x-demo-email': user.email,
           'x-demo-role': user.role,
+          "x-demo-token": localStorage.getItem("pm_token"),
         },
       });
 

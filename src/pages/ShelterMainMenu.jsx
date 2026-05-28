@@ -19,6 +19,7 @@ export default function ShelterMainMenu() {
             'Content-Type': 'application/json',
             'x-demo-email': user.email,
             'x-demo-role': user.role,
+            'x-demo-token': localStorage.getItem('pm_token'),
           },
         });
 

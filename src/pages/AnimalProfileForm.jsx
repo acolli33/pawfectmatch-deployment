@@ -56,6 +56,7 @@ export default function AnimalProfileForm() {
             'Content-Type': 'application/json',
             'x-demo-email': user.email,
             'x-demo-role': user.role,
+            'x-demo-token': localStorage.getItem('pm_token'),
           },
         });
 
@@ -185,6 +186,7 @@ export default function AnimalProfileForm() {
             'Content-Type': 'application/json',
             'x-demo-email': user.email,
             'x-demo-role': user.role,
+            'x-demo-token': localStorage.getItem('pm_token'),
           },
           body: JSON.stringify(payload),
         }

@@ -49,6 +49,7 @@ export default function AdopterPreferencesForm() {
             'Content-Type': 'application/json',
             'x-demo-email': user.email,
             'x-demo-role': user.role,
+            'x-demo-token': localStorage.getItem('pm_token'),
           },
         });
 
@@ -160,6 +161,7 @@ export default function AdopterPreferencesForm() {
           'Content-Type': 'application/json',
           'x-demo-email': user.email,
           'x-demo-role': user.role,
+          'x-demo-token': localStorage.getItem('pm_token'),
         },
         body: JSON.stringify(payload),
       });
