@@ -1,6 +1,7 @@
 import express from 'express';
 import { query } from '../db/client.js';
 import { sendSuccess, sendError } from '../utils/response.js';
+import { send } from 'vite';
 
 const router = express.Router();
 
@@ -42,6 +43,13 @@ router.post('/demo-login', async (req, res) => {
         `This email belongs to a ${profile.role} profile, not a ${role} profile.`,
         403
       );
+    }
+
+    const savedPassword = String(profile.password || '').trim();
+    const enteredPassword = String(password || '').trim();
+
+    if (savedPassword !== enteredPassword) {
+      return sendError(res, 'Incorrect password', 401)
     }
 
     return sendSuccess(res, {
