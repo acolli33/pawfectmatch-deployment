@@ -1,14 +1,13 @@
 import express from 'express';
 import { query } from '../db/client.js';
 import { sendSuccess, sendError } from '../utils/response.js';
-import { send } from 'vite';
 
 const router = express.Router();
 
 async function getProfileByEmail(email) {
   const result = await query(
     `
-    select id, email, role
+    select id, email, role, password
     from profiles
     where lower(email) = lower($1)
     limit 1
