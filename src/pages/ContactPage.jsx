@@ -3,7 +3,7 @@
  
 import { useAuth } from '../auth/AuthContext.jsx';
 import React, { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "../supabaseClient";
  
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -11,6 +11,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 export default function ContactPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
  
   const [threads, setThreads] = useState(null);
   const [activeChatId, setActiveChatId] = useState(null);
@@ -56,6 +57,7 @@ useEffect(() => {
     "Content-Type": "application/json",
     "x-demo-email": user?.email,
     "x-demo-role": user?.role,
+    "x-demo-token": localStorage.getItem("pm_token"),
   });
  
   const loadThreads = async (showLoading = false) => {
@@ -87,6 +89,23 @@ useEffect(() => {
     }
   };
  
+
+  useEffect(() => {
+    const threadId = searchParams.get("threadId");
+
+    if (!threadId) return;
+    if (!Array.isArray(threads)) return;
+
+    const matchingThread = threads.find(
+      (thread) => String(thread.id) === String(threadId)
+    );
+
+    if (matchingThread) {
+      setActiveChatId(matchingThread.id);
+    }
+  }, [searchParams, threads]);
+
+
   const markThreadRead = async (threadId) => {
     if (!threadId || !user) return;
  
@@ -181,6 +200,7 @@ useEffect(() => {
             headers: {
               "x-demo-email": user.email,
               "x-demo-role": user.role,
+              "x-demo-token": localStorage.getItem("pm_token"),
             },
             cache: "no-store",
           }
@@ -282,6 +302,7 @@ useEffect(() => {
               headers: {
                 "x-demo-email": user.email,
                 "x-demo-role": user.role,
+                "x-demo-token": localStorage.getItem("pm_token"),
               },
               cache: "no-store",
             }

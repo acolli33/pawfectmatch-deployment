@@ -42,6 +42,7 @@ export default function MatchesPage() {
     'Content-Type': 'application/json',
     'x-demo-email': user.email,
     'x-demo-role': user.role,
+    "x-demo-token": localStorage.getItem("pm_token"),
   });
 
   useEffect(() => {

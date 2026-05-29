@@ -7,7 +7,7 @@ const router = express.Router();
 async function getProfileByEmail(email) {
   const result = await query(
     `
-    select id, email, role
+    select id, email, role, password
     from profiles
     where lower(email) = lower($1)
     limit 1
@@ -42,6 +42,13 @@ router.post('/demo-login', async (req, res) => {
         `This email belongs to a ${profile.role} profile, not a ${role} profile.`,
         403
       );
+    }
+
+    const savedPassword = String(profile.password || '').trim();
+    const enteredPassword = String(password || '').trim();
+
+    if (savedPassword !== enteredPassword) {
+      return sendError(res, 'Incorrect password', 401)
     }
 
     return sendSuccess(res, {
