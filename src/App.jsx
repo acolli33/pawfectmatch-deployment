@@ -9,6 +9,7 @@ import AnimalProfileForm from './pages/AnimalProfileForm';
 import ContactPage from './pages/ContactPage';
 import ShelterListingsPage from './pages/ShelterListingsPage';
 import AdopterListingsPage from './pages/AdopterListingsPage';
+import AnimalListingDetailsPage from './pages/AnimalListingDetailsPage';
 import MatchesPage from './pages/MatchesPage';
 import RoleGuard from './auth/RoleGuard.jsx';
 import './App.css';
@@ -65,6 +66,15 @@ function App() {
           element={
             <RoleGuard allowRoles={["adopter", "shelter"]}>
               <ContactPage />
+            </RoleGuard>
+          }
+        />
+
+        <Route
+          path="/animal-listing-details/:id"
+          element={
+            <RoleGuard allowRoles={["adopter", "shelter"]}>
+              <AnimalListingDetailsPage />
             </RoleGuard>
           }
         />

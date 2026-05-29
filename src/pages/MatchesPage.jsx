@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext.jsx';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -163,7 +163,7 @@ export default function MatchesPage() {
           <h1>PawfectMatch</h1>
           <p>Your Matches</p>
           <p style={styles.subtitle}>
-            View animal listings you matched with
+            View pet listings you matched with
           </p>
         </div>
 
@@ -172,7 +172,7 @@ export default function MatchesPage() {
             onClick={() => navigate('/adopter-listings')}
             style={{ marginRight: '12px' }}
           >
-            Browse More Animals
+            Browse More Pets
           </button>
 
           <button
@@ -210,11 +210,11 @@ export default function MatchesPage() {
           <div style={styles.emptyBox}>
             <h3 style={{ marginTop: 0 }}>No matches yet</h3>
             <p style={{ color: '#666' }}>
-              Start browsing animal listings and click the heart to add animals here.
+              Start browsing pet listings and click the heart to add pets here.
             </p>
 
             <button onClick={() => navigate('/adopter-listings')}>
-              Browse Animals
+              Browse Pets
             </button>
           </div>
         ) : (
@@ -237,15 +237,20 @@ export default function MatchesPage() {
                   <div style={styles.cardTop}>
                     <div>
                       <h3 style={{ marginTop: 0, marginBottom: '10px' }}>
-                        {animal.name}
+                        <Link
+                          to={`/animal-listing-details/${animal.id}`}
+                          style={{
+                            color: '#2F3A56',
+                            textDecoration: 'underline',
+                          }}
+                        >
+                          {animal.name}
+                        </Link>
                       </h3>
 
                       <div style={{ marginBottom: '12px' }}>
                         <span
-                          style={{
-                            ...styles.badge,
-                            ...getAvailabilityBadgeStyle(animal.availability),
-                          }}
+                          style={{...styles.badge, ...getAvailabilityBadgeStyle(animal.availability),}}
                         >
                           {animal.availability}
                         </span>
@@ -291,6 +296,14 @@ export default function MatchesPage() {
 
                       {openMenuId === animal.id && (
                         <div style={styles.dropdownMenu}>
+                          <button
+                            type="button"
+                            onClick={() => navigate(`/animal-listing-details/${animal.id}`)}
+                            style={styles.dropdownItem}
+                          >
+                            View Details
+                          </button>
+
                           <button
                             type="button"
                             onClick={() => handleMessageShelter(animal)}

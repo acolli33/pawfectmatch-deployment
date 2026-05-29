@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext.jsx';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -130,8 +130,14 @@ export default function AdopterListingsPage() {
           if (matchedAnimalIds.includes(animalId)) return false;
           if (availability && availability !== 'available') return false;
 
-          if (preferredTypes.length > 0 && !preferredTypes.includes(animalType)) {
-            return false;
+          if (preferredTypes.length > 0) {
+            const isDogOrCat = animalType === 'dog' || animalType === 'cat';
+            const isExactMatch = preferredTypes.includes(animalType);
+            const isOtherMatch = preferredTypes.includes('other') && !isDogOrCat;
+
+            if (!isExactMatch && !isOtherMatch) {
+              return false;
+            }
           }
 
           if (preferredSizes.length > 0 && !preferredSizes.includes(animalSize)) {
@@ -310,9 +316,9 @@ export default function AdopterListingsPage() {
       <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
           <h1>PawfectMatch</h1>
-          <p>Animal Matches</p>
+          <p>Pet Matches</p>
           <p style={{ color: '#666', marginTop: '10px' }}>
-            Browse available animals that match your adoption preferences
+            Browse available pets that match your adoption preferences
           </p>
         </div>
 
@@ -400,9 +406,9 @@ export default function AdopterListingsPage() {
           </div>
         ) : !currentAnimal ? (
           <div style={styles.emptyBox}>
-            <h3 style={{ marginTop: 0 }}>No more animals to review</h3>
+            <h3 style={{ marginTop: 0 }}>No more pets to review</h3>
             <p style={{ color: '#666' }}>
-              You have reviewed all currently matching animals.
+              You have reviewed all currently matching pets.
             </p>
             <button onClick={() => setCurrentIndex(0)}>
               Start Over
@@ -429,8 +435,16 @@ export default function AdopterListingsPage() {
 
               <div style={styles.cardContent}>
                 <h3 style={{ marginTop: 0, marginBottom: '10px' }}>
-                  {currentAnimal.name}
-                </h3>
+                        <Link
+                          to={`/animal-listing-details/${currentAnimal.id}`}
+                          style={{
+                            color: '#2F3A56',
+                            textDecoration: 'underline',
+                          }}
+                        >
+                          {currentAnimal.name}
+                        </Link>
+                      </h3>
 
                 <div style={{ marginBottom: '12px' }}>
                   <span
@@ -457,7 +471,7 @@ export default function AdopterListingsPage() {
                   <button
                     type="button"
                     onClick={handleSkip}
-                    aria-label="Skip animal"
+                    aria-label="Skip pet"
                     style={{
                       ...styles.swipeButton,
                       backgroundColor: '#eadfd7',
@@ -465,6 +479,13 @@ export default function AdopterListingsPage() {
                     }}
                   >
                     ✕
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/animal-listing-details/${currentAnimal.id}`)}
+                  >
+                    View Details
                   </button>
 
                   <button
@@ -477,14 +498,14 @@ export default function AdopterListingsPage() {
                   <button
                     type="button"
                     onClick={() => handleMatch(currentAnimal)}
-                    aria-label="Match with animal"
+                    aria-label="Match with pet"
                     style={{
                       ...styles.swipeButton,
                       backgroundColor: '#dbeadf',
                       color: '#355e3b',
                     }}
                   >
-                    ♥
+                    ❤
                   </button>
                 </div>
               </div>

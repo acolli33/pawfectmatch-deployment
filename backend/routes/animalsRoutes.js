@@ -104,18 +104,63 @@ router.get('/:id', requireAuth, async (req, res) => {
   try {
     const result = await query(
       `
-      select *
-      from animals
-      where id = $1
-        and deleted_at is null
+      select
+        a.id,
+        a.shelter_id,
+        a.name,
+        a.type,
+        a.breed,
+        a.age,
+        a.size,
+        a.sex,
+        a.description,
+        a.temperament_tags,
+        a.good_with_children,
+        a.good_with_other_animals,
+        a.must_be_leashed,
+        a.special_needs,
+        a.availability,
+        a.intake_date,
+        a.adoption_fee,
+        a.primary_photo_url,
+        a.created_at,
+        a.updated_at,
+
+        s.organization_name,
+        s.description as shelter_description,
+        s.address as shelter_address,
+        s.city as shelter_city,
+        s.state as shelter_state,
+        s.zip_code as shelter_zip_code,
+        s.phone as shelter_phone,
+        s.email as shelter_email,
+        s.website as shelter_website,
+        s.logo_url as shelter_logo_url,
+        s.verified as shelter_verified
+      from animals a
+      left join shelters s
+        on s.id = a.shelter_id
+      where a.id = $1
+        and a.deleted_at is null
       limit 1
       `,
       [req.params.id]
     );
 
-    return sendSuccess(res, result.rows[0] || null);
+    const animal = result.rows[0];
+
+    if (!animal) {
+      return sendError(res, 'Animal not found', 404);
+    }
+
+    return sendSuccess(res, animal);
   } catch (error) {
-    console.error(error);
+    console.error('Failed to fetch animal:', {
+      message: error.message,
+      detail: error.detail,
+      code: error.code,
+    });
+
     return sendError(res, 'Failed to fetch animal');
   }
 });
@@ -129,6 +174,7 @@ router.post('/', requireAuth, requireRole(['shelter']), async (req, res) => {
     ageMonths,
     sex,
     size,
+    adoption_fee,
     disposition,
     availability,
     description,
@@ -192,7 +238,7 @@ router.post('/', requireAuth, requireRole(['shelter']), async (req, res) => {
         availability,
         primary_photo_url
       )
-      values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+      values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14, $15)
       returning *
       `,
       [
@@ -210,6 +256,7 @@ router.post('/', requireAuth, requireRole(['shelter']), async (req, res) => {
         medicalNotes || '',
         availability || 'available',
         photos?.[0] || null,
+        adoption_fee || null,
       ]
     );
 
@@ -229,6 +276,7 @@ router.put('/:id', requireAuth, requireRole(['shelter']), async (req, res) => {
     ageMonths,
     sex,
     size,
+    adoption_fee,
     disposition,
     availability,
     description,
@@ -302,8 +350,9 @@ router.put('/:id', requireAuth, requireRole(['shelter']), async (req, res) => {
         special_needs = $11,
         availability = $12,
         primary_photo_url = $13,
+        adoption_fee = $14,
         updated_at = now()
-      where id = $14
+      where id = $15
       returning *
       `,
       [
@@ -320,6 +369,7 @@ router.put('/:id', requireAuth, requireRole(['shelter']), async (req, res) => {
         medicalNotes || '',
         availability || 'available',
         photos?.[0] || null,
+        adoption_fee || null,
         req.params.id,
       ]
     );

@@ -31,6 +31,7 @@ export default function AnimalProfileForm() {
     size: '',
     weightLbs: '',
     color: '',
+    adoption_fee: '',
     disposition: {
       goodWithChildren: false,
       goodWithOtherAnimals: false,
@@ -76,6 +77,7 @@ export default function AnimalProfileForm() {
           size: animal.size || '',
           weightLbs: '',
           color: '',
+          adoption_fee: animal.adoption_fee || '',
           disposition: {
             goodWithChildren: animal.good_with_children || false,
             goodWithOtherAnimals: animal.good_with_other_animals || false,
@@ -417,6 +419,18 @@ export default function AnimalProfileForm() {
               value={formData.color}
               onChange={(e) => setFormData({ ...formData, color: e.target.value })}
               placeholder="e.g., Brown with white patches"
+              style={styles.input}
+            />
+          </div>
+
+          <div style={styles.section}>
+            <label style={styles.label}>Adoption Fee</label>
+            <input
+              type="number"
+              min="0"
+              value={formData.adoption_fee}
+              onChange={(e) => setFormData({ ...formData, adoption_fee: e.target.value })}
+              placeholder="e.g., 25"
               style={styles.input}
             />
           </div>

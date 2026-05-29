@@ -160,7 +160,15 @@ router.get('/matches', requireAuth, async (req, res) => {
         a.availability,
         a.primary_photo_url,
 
-        shelter.organization_name
+        shelter.organization_name,
+        shelter.address as shelter_address,
+        shelter.city as shelter_city,
+        shelter.state as shelter_state,
+        shelter.zip_code as shelter_zip_code,
+        shelter.phone as shelter_phone,
+        shelter.email as shelter_email,
+        shelter.website as shelter_website,
+        shelter.verified as shelter_verified
       from swipes s
       join animals a
         on a.id = s.animal_id

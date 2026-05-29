@@ -11,6 +11,7 @@ export default function AdopterPreferencesForm() {
   const [formData, setFormData] = useState({
     animalTypes: [],
     breeds: '',
+    searchLocation: '',
     agePreference: 'any',
     sizePreference: [],
     disposition: {
@@ -64,6 +65,7 @@ export default function AdopterPreferencesForm() {
             ? saved.animal_types
             : [],
           breeds: saved.breeds || '',
+          searchLocation: saved.search_location || '',
           agePreference: saved.age_preference || 'any',
           sizePreference: Array.isArray(saved.size_preferences)
             ? saved.size_preferences
@@ -148,6 +150,7 @@ export default function AdopterPreferencesForm() {
       const payload = {
         animalTypes: formData.animalTypes,
         breeds: formData.breeds,
+        searchLocation: formData.searchLocation,
         agePreference: formData.agePreference,
         sizePreference: formData.sizePreference,
         disposition: formData.disposition,
@@ -204,13 +207,13 @@ export default function AdopterPreferencesForm() {
         <div style={styles.leftContent}>
           <h1 style={styles.leftTitle}>Find Your Perfect Match</h1>
           <p style={styles.leftDescription}>
-            Tell us what you're looking for in a companion animal and we'll help you find your perfect match.
+            Tell us what you're looking for in a companion pet and we'll help you find your perfect match.
           </p>
           
           <div style={styles.infoSection}>
             <h3 style={styles.infoTitle}>What We'll Ask:</h3>
             <ul style={styles.infoList}>
-              <li>Type of animal you're interested in</li>
+              <li>Type of pet you're interested in</li>
               <li>Size and age preferences</li>
               <li>Behavioral requirements</li>
               <li>How far you're willing to travel</li>
@@ -255,7 +258,7 @@ export default function AdopterPreferencesForm() {
 
           {/* Animal Type Selection */}
           <div style={styles.section}>
-            <label style={styles.label}>What type of animal are you interested in? *</label>
+            <label style={styles.label}>What type of pet are you interested in? *</label>
             <div style={styles.buttonGroup}>
               {animalTypeOptions.map(option => (
                 <button
@@ -287,6 +290,19 @@ export default function AdopterPreferencesForm() {
               value={formData.breeds}
               onChange={(e) => setFormData({ ...formData, breeds: e.target.value })}
               placeholder="e.g., Golden Retriever, Tabby, Mixed Breed"
+              style={styles.input}
+            />
+          </div>
+
+          {/* Search Location */}
+          <div style={styles.section}>
+            <label style={styles.label}>Search Location</label>
+            <p style={styles.helpText}>Enter the city, state, or ZIP code where you want to search</p>
+            <input
+              type="text"
+              value={formData.searchLocation}
+              onChange={(e) => setFormData({ ...formData, searchLocation: e.target.value })}
+              placeholder="e.g., Portland, OR or 97201"
               style={styles.input}
             />
           </div>
