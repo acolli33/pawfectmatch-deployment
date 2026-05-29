@@ -181,7 +181,7 @@ export default function ShelterAuth() {
                 </form>
 
                 <div style={{ marginTop: '20px', padding: '10px', background: '#fff9e6', borderRadius: '6px', fontSize: '12px' }}>
-                    Demo Mode: use a shelter email that already exists in Supabase (shelter@example.com)
+                    Demo Mode: use a shelter email that already exists in Supabase (email: shelter@example.com, password: shelter123)
                 </div>
             </div>
         </div>

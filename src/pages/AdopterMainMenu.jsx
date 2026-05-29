@@ -13,12 +13,12 @@ export default function MainMenu() {
           <h1>PawfectMatch</h1>
           <p>Adopter Dashboard</p>
           <p style={{ color: '#666', marginTop: '10px' }}>
-            Find your perfect companion or help animals find their forever homes
+            Find your perfect companion or help pets find their forever homes
           </p>
         </div>
 
         {/* Demo Badge */}
-        <div 
+        {/* <div 
          style={{ 
           background: '#fff9e6', 
           border: '1px solid #ffe066', 
@@ -30,7 +30,7 @@ export default function MainMenu() {
           <p style={{ margin: 0, fontSize: '14px' }}>
             Demo - Test account mode
           </p>
-        </div>
+        </div> */}
 
         {/* Main Action Cards */}
         <div style={{ marginBottom: '30px' }}>
@@ -41,20 +41,20 @@ export default function MainMenu() {
           </div>
 
           <div className="card" onClick={() => navigate('/adopter-listings')} style={{ marginBottom: '20px', width: '100%' }}>
-            <h3>Browse Animal Listings</h3>
-            <p>View matching animals, skip, match, or message shelters</p>
+            <h3>Browse Pet Listings</h3>
+            <p>View matching pets, skip, match, or message shelters</p>
             <button>Start Browsing</button>
           </div>
 
           <div className="card" onClick={() => navigate('/matches')} style={{ marginBottom: '20px', width: '100%' }}>
             <h3>Matches</h3>
-            <p>View animals you matched with</p>
+            <p>View pets you matched with</p>
             <button>View Matches</button>
           </div>
 
           <div className="card" onClick={() => navigate('/contact')} style={{ marginBottom: '20px', width: '100%' }}>
             <h3>Messages</h3>
-            <p>Chat with shelters about available animals</p>
+            <p>Chat with shelters about available pets</p>
             <button>Open Messages</button>
           </div>
         </div>

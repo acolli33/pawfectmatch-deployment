@@ -181,7 +181,7 @@ export default function AdopterAuth() {
                 </form>
 
                 <div style={{ marginTop: '20px', padding: '10px', background: '#fff9e6', borderRadius: '6px', fontSize: '12px' }}>
-                    Demo Mode: use an adopter email that already exists in Supabase (adopter@example.com)
+                    Demo Mode: use an adopter email that already exists in Supabase (email: adopter@example.com, password: adopter123)
                 </div>
             </div>
         </div>
