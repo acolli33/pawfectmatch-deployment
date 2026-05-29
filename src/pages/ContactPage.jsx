@@ -634,7 +634,9 @@ useEffect(() => {
                       isMine ? "#FFF7ED" : "#2C2C34",
                     }}
                   >
-                    <div>{msg.content}</div>
+                    <div style={{ whiteSpace: "pre-wrap" }}>
+                      {msg.content}
+                    </div>
                     <div style={{ fontSize: "11px", marginTop: "4px", opacity: 1,
                       color: isMine ? "#ffffff" : "#1f2937",}}>
                       {new Date(msg.created_at).toLocaleTimeString()}
