@@ -218,14 +218,14 @@ export default function AdopterPreferencesForm() {
 
       <div style={styles.container} className="preferences-container">
 
-        <div style={styles.leftPanel} className="preferences-left">
+        <aside style={styles.leftPanel} className="preferences-left" aria-label="Form guidance">
           <div style={styles.leftContent}>
             <h1 style={styles.leftTitle}>Find Your Perfect Match</h1>
             <p style={styles.leftDescription}>
               Tell us what you're looking for in a companion animal and we'll help you find your perfect match.
             </p>
             <div style={styles.infoSection}>
-              <h3 style={styles.infoTitle}>What We'll Ask:</h3>
+              <h2 style={styles.infoTitle}>What We'll Ask:</h2>
               <ul style={styles.infoList}>
                 <li>Type of animal you're interested in</li>
                 <li>Size and age preferences</li>
@@ -234,7 +234,7 @@ export default function AdopterPreferencesForm() {
               </ul>
             </div>
             <div style={styles.infoSection}>
-              <h3 style={styles.infoTitle}>Why This Helps:</h3>
+              <h2 style={styles.infoTitle}>Why This Helps:</h2>
               <ul style={styles.infoList}>
                 <li>Better matches for your lifestyle</li>
                 <li>Saves time browsing</li>
@@ -244,17 +244,17 @@ export default function AdopterPreferencesForm() {
             </div>
             <button onClick={() => navigate('/adopter-menu')} style={styles.backButton}>Back to Menu</button>
           </div>
-        </div>
+        </aside>
 
-        <div style={styles.rightPanel} className="preferences-right">
-          <div style={styles.formHeader} className="preferences-form-header">
+        <main style={styles.rightPanel} className="preferences-right">
+          <header style={styles.formHeader} className="preferences-form-header">
             <h2 style={styles.formTitle}>Adoption Preferences</h2>
             <p style={styles.formSubtitle}>Help us find your perfect companion</p>
-          </div>
+          </header>
 
           <div style={styles.formContent} className="preferences-form-content">
             {submitStatus && (
-              <div style={{
+              <div role="alert" style={{
                 ...styles.statusMessage,
                 backgroundColor: submitStatus.type === 'success' ? '#d1fae5' : '#fee2e2',
                 borderColor: submitStatus.type === 'success' ? '#059669' : '#dc2626',
@@ -283,24 +283,24 @@ export default function AdopterPreferencesForm() {
                   </button>
                 ))}
               </div>
-              {errors.animalTypes && <p style={styles.errorText}>{errors.animalTypes}</p>}
+              {errors.animalTypes && <p style={styles.errorText} role="alert">{errors.animalTypes}</p>}
             </div>
 
             <div style={styles.section}>
-              <label style={styles.label}>Any specific breed preferences?</label>
+              <label htmlFor="breeds" style={styles.label}>Any specific breed preferences?</label>
               <p style={styles.helpText}>Optional - leave blank for any breed</p>
-              <input type="text" value={formData.breeds} onChange={(e) => setFormData({ ...formData, breeds: e.target.value })} placeholder="e.g., Golden Retriever, Tabby, Mixed Breed" style={styles.input} />
+              <input id="breeds" type="text" value={formData.breeds} onChange={(e) => setFormData({ ...formData, breeds: e.target.value })} placeholder="e.g., Golden Retriever, Tabby, Mixed Breed" style={styles.input} />
             </div>
 
             <div style={styles.section}>
-              <label style={styles.label}>Search Location</label>
+              <label htmlFor="searchLocation" style={styles.label}>Search Location</label>
               <p style={styles.helpText}>Enter the city, state, or ZIP code where you want to search</p>
-              <input type="text" value={formData.searchLocation} onChange={(e) => setFormData({ ...formData, searchLocation: e.target.value })} placeholder="e.g., Portland, OR or 97201" style={styles.input} />
+              <input id="searchLocation" type="text" value={formData.searchLocation} onChange={(e) => setFormData({ ...formData, searchLocation: e.target.value })} placeholder="e.g., Portland, OR or 97201" style={styles.input} />
             </div>
 
             <div style={styles.section}>
-              <label style={styles.label}>Age Preference</label>
-              <select value={formData.agePreference} onChange={(e) => setFormData({ ...formData, agePreference: e.target.value })} style={styles.select}>
+              <label htmlFor="agePreference" style={styles.label}>Age Preference</label>
+              <select id="agePreference" value={formData.agePreference} onChange={(e) => setFormData({ ...formData, agePreference: e.target.value })} style={styles.select}>
                 <option value="any">Any Age</option>
                 <option value="young">Young (under 2 years)</option>
                 <option value="adult">Adult (2-7 years)</option>
@@ -339,8 +339,8 @@ export default function AdopterPreferencesForm() {
             </div>
 
             <div style={styles.section}>
-              <label style={styles.label}>Maximum Distance: {formData.maxDistance} miles</label>
-              <input type="range" min="1" max="500" value={formData.maxDistance} onChange={(e) => setFormData({ ...formData, maxDistance: parseInt(e.target.value) })} style={styles.slider} />
+              <label htmlFor="maxDistance" style={styles.label}>Maximum Distance: {formData.maxDistance} miles</label>
+              <input id="maxDistance" type="range" min="1" max="500" value={formData.maxDistance} onChange={(e) => setFormData({ ...formData, maxDistance: parseInt(e.target.value) })} style={styles.slider} />
               <div style={styles.sliderLabels}>
                 <span>1 mile</span>
                 <span>500 miles</span>
@@ -348,11 +348,11 @@ export default function AdopterPreferencesForm() {
             </div>
 
             <div style={styles.section}>
-              <label style={styles.label}>Additional Notes</label>
+              <label htmlFor="additionalNotes" style={styles.label}>Additional Notes</label>
               <p style={styles.helpText}>Tell us anything else about what you're looking for</p>
-              <textarea value={formData.additionalNotes} onChange={(e) => setFormData({ ...formData, additionalNotes: e.target.value })} rows="4" placeholder="I'm looking for a calm, house-trained companion who enjoys walks..." style={styles.textarea} />
-              <p style={styles.charCount}>{formData.additionalNotes.length}/1000 characters</p>
-              {errors.additionalNotes && <p style={styles.errorText}>{errors.additionalNotes}</p>}
+              <textarea id="additionalNotes" value={formData.additionalNotes} onChange={(e) => setFormData({ ...formData, additionalNotes: e.target.value })} rows="4" placeholder="I'm looking for a calm, house-trained companion who enjoys walks..." style={styles.textarea} />
+              <p style={styles.charCount} aria-live="polite">{formData.additionalNotes.length}/1000 characters</p>
+              {errors.additionalNotes && <p style={styles.errorText} role="alert">{errors.additionalNotes}</p>}
             </div>
 
             <div style={styles.buttonContainer}>
@@ -362,7 +362,7 @@ export default function AdopterPreferencesForm() {
               <button type="button" onClick={() => navigate('/adopter-menu')} style={styles.cancelButton}>Cancel</button>
             </div>
           </div>
-        </div>
+        </main>
 
       </div>
     </>

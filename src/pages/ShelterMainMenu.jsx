@@ -12,7 +12,6 @@ export default function ShelterMainMenu() {
   useEffect(() => {
     const loadShelter = async () => {
       if (!user?.email || user.role !== 'shelter') return;
-
       try {
         const response = await fetch(`${API_BASE_URL}/api/shelters/me`, {
           headers: {
@@ -22,9 +21,7 @@ export default function ShelterMainMenu() {
             'x-demo-token': localStorage.getItem('pm_token'),
           },
         });
-
         const result = await response.json();
-
         if (response.ok && result.ok && result.data?.organization_name) {
           setShelterName(result.data.organization_name);
         }
@@ -32,73 +29,50 @@ export default function ShelterMainMenu() {
         console.error('Failed to load shelter info:', error);
       }
     };
-
     loadShelter();
   }, [user]);
 
   return (
     <div style={{ background: '#fafafa', minHeight: '100vh', padding: '40px' }}>
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-        {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+
+        <header style={{ textAlign: 'center', marginBottom: '40px' }}>
           <h1>PawfectMatch</h1>
-          <p>{shelterName}</p>
-          <p style={{ color: '#666', marginTop: '10px' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 'normal', margin: '5px 0' }}>{shelterName}</h2>
+          <p style={{ color: '#595959', marginTop: '10px' }}>
             Manage listings, talk with adopters, and help pets find their forever homes
           </p>
-        </div>
+        </header>
 
-        {/* Demo Badge */}
-        {/* <div
-          style={{
-            background: '#fff9e6',
-            border: '1px solid #ffe066',
-            borderRadius: '8px',
-            padding: '15px',
-            marginBottom: '30px',
-            textAlign: 'center',
-          }}>
-            <p style={{ margin: 0, fontSize: '14px' }}>
-            Demo - Test account mode
+        <main>
+          <div style={{ marginBottom: '30px' }}>
+            <div className="card" style={{ marginBottom: '20px', width: '100%' }}>
+              <h2 style={{ fontSize: '18px' }}>Manage Pet Listings</h2>
+              <p>Create, edit, and remove pet profiles.</p>
+              <button onClick={() => navigate('/shelter-listings')}>Manage Pets</button>
+            </div>
+
+            <div className="card" style={{ marginBottom: '20px', width: '100%' }}>
+              <h2 style={{ fontSize: '18px' }}>Messages</h2>
+              <p>View and respond to messages from potential adopters.</p>
+              <button onClick={() => navigate('/contact')}>Open Messages</button>
+            </div>
+          </div>
+
+          <div style={{ textAlign: 'center' }}>
+            <button onClick={() => { logout(); navigate('/'); }} style={{ marginRight: '12px' }}>
+              Log Out
+            </button>
+            <a href="/" style={{ color: '#595959', fontSize: '14px' }}>
+              Back to Login Selection
+            </a>
+          </div>
+
+          <p style={{ textAlign: 'center', fontSize: '12px', color: '#595959', marginTop: '30px' }}>
+            CS Capstone Project - Animal Adoption Matchmaker
           </p>
-        </div> */}
+        </main>
 
-        {/* Main Action Cards */}
-        <div style={{ marginBottom: '30px' }}>
-          <div className="card" onClick={() => navigate('/shelter-listings')} style={{ marginBottom: '20px', width: '100%' }}>
-            <h3>Manage Pet Listings</h3>
-            <p>Create, edit, and remove pet profiles.</p>
-            <button>Manage Pets</button>
-          </div>
-
-          <div className="card" onClick={() => navigate('/contact')} style={{ marginBottom: '20px', width: '100%' }}>
-            <h3>Messages</h3>
-            <p>View and respond to messages from potential adopters.</p>
-            <button>Open Messages</button>
-          </div>
-        </div>
-
-        {/* Back to Login */}
-        <div style={{ textAlign: 'center' }}>
-          <button
-            onClick={() => {
-              logout();
-              navigate('/');
-            }}
-            style={{ marginRight: '12px' }}
-          >
-            Log Out
-          </button>
-
-          <a href="/" style={{ color: '#666', fontSize: '14px', textDecoration: 'none' }}>
-            Back to Login Selection
-          </a>
-        </div>
-
-        {/* Footer */}
-        <p style={{ textAlign: 'center', fontSize: '12px', color: '#999', marginTop: '30px' }}>
-          CS Capstone Project - Animal Adoption Matchmaker
-        </p>
       </div>
     </div>
   );

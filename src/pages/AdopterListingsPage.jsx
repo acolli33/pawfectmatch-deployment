@@ -306,7 +306,7 @@ export default function AdopterListingsPage() {
 
   const currentAnimal = animals[currentIndex];
 
-  return (
+return (
     <>
       <style>{`
         @media (max-width: 768px) {
@@ -357,9 +357,7 @@ export default function AdopterListingsPage() {
 
             {preferences && (
               <div style={styles.filterBox}>
-                <p style={{ marginTop: 0, marginBottom: '10px', fontWeight: '700' }}>
-                  Applied Filters
-                </p>
+                <p style={{ marginTop: 0, marginBottom: '10px', fontWeight: '700' }}>Applied Filters</p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                   <span style={styles.filterPill}><strong>Type:</strong> {showList(preferences.animal_types)}</span>
                   <span style={styles.filterPill}><strong>Breed:</strong> {showList(preferences.breeds)}</span>
@@ -385,16 +383,12 @@ export default function AdopterListingsPage() {
             ) : animals.length === 0 ? (
               <div style={styles.emptyBox}>
                 <h2 style={{ marginTop: 0, fontSize: '18px' }}>No matching listings yet</h2>
-                <p style={{ color: '#595959' }}>
-                  Try updating your preferences or check back later.
-                </p>
+                <p style={{ color: '#595959' }}>Try updating your preferences or check back later.</p>
               </div>
             ) : !currentAnimal ? (
               <div style={styles.emptyBox}>
                 <h2 style={{ marginTop: 0, fontSize: '18px' }}>No more animals to review</h2>
-                <p style={{ color: '#595959' }}>
-                  You have reviewed all currently matching animals.
-                </p>
+                <p style={{ color: '#595959' }}>You have reviewed all currently matching animals.</p>
                 <button onClick={() => setCurrentIndex(0)}>Start Over</button>
               </div>
             ) : (
@@ -406,11 +400,7 @@ export default function AdopterListingsPage() {
                 <div style={styles.card} className="listings-card">
                   <div style={styles.imageBox} className="listings-image-box">
                     {currentAnimal.primary_photo_url ? (
-                      <img
-                        src={currentAnimal.primary_photo_url}
-                        alt={currentAnimal.name}
-                        style={styles.image}
-                      />
+                      <img src={currentAnimal.primary_photo_url} alt={currentAnimal.name} style={styles.image} />
                     ) : (
                       <div style={styles.noPhoto}>No Photo</div>
                     )}
@@ -422,10 +412,7 @@ export default function AdopterListingsPage() {
                     </h2>
 
                     <div style={{ marginBottom: '12px' }}>
-                      <span style={{
-                        ...styles.badge,
-                        ...getAvailabilityBadgeStyle(currentAnimal.availability),
-                      }}>
+                      <span style={{ ...styles.badge, ...getAvailabilityBadgeStyle(currentAnimal.availability) }}>
                         {currentAnimal.availability}
                       </span>
                     </div>
@@ -445,11 +432,7 @@ export default function AdopterListingsPage() {
                         type="button"
                         onClick={handleSkip}
                         aria-label="Skip animal"
-                        style={{
-                          ...styles.swipeButton,
-                          backgroundColor: '#eadfd7',
-                          color: '#8a5a3b',
-                        }}
+                        style={{ ...styles.swipeButton, backgroundColor: '#eadfd7', color: '#8a5a3b' }}
                       >
                         ✕
                       </button>
@@ -460,11 +443,7 @@ export default function AdopterListingsPage() {
                         type="button"
                         onClick={() => handleMatch(currentAnimal)}
                         aria-label="Match with animal"
-                        style={{
-                          ...styles.swipeButton,
-                          backgroundColor: '#dbeadf',
-                          color: '#355e3b',
-                        }}
+                        style={{ ...styles.swipeButton, backgroundColor: '#dbeadf', color: '#355e3b' }}
                       >
                         ♥
                       </button>
@@ -537,15 +516,8 @@ const styles = {
     maxWidth: '900px',
     margin: '0 auto',
   },
-  imageBox: {
-    background: '#f5f5f5',
-    minHeight: '360px',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-  },
+  imageBox: { background: '#f5f5f5', minHeight: '360px' },
+  image: { width: '100%', height: '100%', objectFit: 'cover' },
   noPhoto: {
     width: '100%',
     height: '100%',
@@ -554,18 +526,14 @@ const styles = {
     justifyContent: 'center',
     color: '#595959',
   },
-  cardContent: {
-    padding: '24px',
-  },
+  cardContent: { padding: '24px' },
   badge: {
     display: 'inline-block',
     fontSize: '13px',
     fontWeight: '600',
     textTransform: 'capitalize',
   },
-  detail: {
-    margin: '4px 0',
-  },
+  detail: { margin: '4px 0' },
   actions: {
     display: 'flex',
     justifyContent: 'space-between',

@@ -1,6 +1,6 @@
 // This code was partially developed with the help of ChatGPT(GenAI).
 // The code was reviewed, modified, and tested before use.
- 
+
 import { useAuth } from '../auth/AuthContext.jsx';
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -308,7 +308,7 @@ export default function ContactPage() {
     threadSection: { flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" },
     threadList: { flex: 1, overflowY: "auto" },
     newConversationContainer: { padding: "16px", borderTop: "1px solid #D7C3AE", backgroundColor: "#FFF7ED", position: "sticky", bottom: 0 },
-    newConversationButton: { width: "100%", padding: "14px", backgroundColor: "#B46D92", color: "#FFF7ED", border: "none", borderRadius: "10px", cursor: "pointer", fontWeight: "600", fontSize: "15px" },
+    newConversationButton: { width: "100%", padding: "14px", backgroundColor: "#8B3D6B", color: "#FFF7ED", border: "none", borderRadius: "10px", cursor: "pointer", fontWeight: "600", fontSize: "15px" },
     animalCard: { display: "flex", alignItems: "center", gap: "12px", padding: "14px 20px", cursor: "pointer", borderBottom: "1px solid #D7C3AE", transition: "background-color 0.2s ease" },
     animalImage: { width: "48px", height: "48px", borderRadius: "10px", objectFit: "cover", flexShrink: 0 },
     closeButton: { width: "100%", padding: "12px", borderRadius: "10px", border: "none", backgroundColor: "#2F3A56", color: "#FFF7ED", fontWeight: "600", cursor: "pointer" },
@@ -342,44 +342,44 @@ export default function ContactPage() {
 
             <div style={styles.threadList} role="list">
               {threads?.map(thread => (
-                <button
-                  key={thread.id}
-                  role="listitem"
-                  onClick={() => setActiveChatId(thread.id)}
-                  aria-current={String(thread.id) === String(activeChatId) ? "true" : undefined}
-                  aria-label={`${thread.animal_name || "Unknown Animal"}${Number(thread.unread_count || 0) > 0 ? `, ${thread.unread_count} unread` : ''}`}
-                  style={{
-                    width: "100%",
-                    textAlign: "left",
-                    padding: "12px 16px",
-                    cursor: "pointer",
-                    backgroundColor: String(thread.id) === String(activeChatId) ? "#EADFD2" : "transparent",
-                    color: "#2C2C34",
-                    borderBottom: "1px solid rgba(255,255,255,0.12)",
-                    borderTop: "none",
-                    borderLeft: "none",
-                    borderRight: "none",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    fontFamily: "Arial, sans-serif",
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <img src={thread.primary_photo_url} alt={thread.animal_name} style={{ width: "40px", height: "40px", borderRadius: "8px", objectFit: "cover" }} />
-                    <div style={{ color: "#2C2C34", fontWeight: "500" }}>
-                      {thread.animal_name || "Unknown Animal"}
-                      {thread.other_party_name && (
-                        <span style={{ fontWeight: "400", fontSize: "13px" }}>{" "}({thread.other_party_name})</span>
-                      )}
+                <div key={thread.id} role="listitem">
+                  <button
+                    onClick={() => setActiveChatId(thread.id)}
+                    aria-current={String(thread.id) === String(activeChatId) ? "true" : undefined}
+                    aria-label={`${thread.animal_name || "Unknown Animal"}${Number(thread.unread_count || 0) > 0 ? `, ${thread.unread_count} unread` : ''}`}
+                    style={{
+                      width: "100%",
+                      textAlign: "left",
+                      padding: "12px 16px",
+                      cursor: "pointer",
+                      backgroundColor: String(thread.id) === String(activeChatId) ? "#EADFD2" : "transparent",
+                      color: "#2C2C34",
+                      borderBottom: "1px solid rgba(255,255,255,0.12)",
+                      borderTop: "none",
+                      borderLeft: "none",
+                      borderRight: "none",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      fontFamily: "Arial, sans-serif",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <img src={thread.primary_photo_url} alt={thread.animal_name} style={{ width: "40px", height: "40px", borderRadius: "8px", objectFit: "cover" }} />
+                      <div style={{ color: "#2C2C34", fontWeight: "500" }}>
+                        {thread.animal_name || "Unknown Animal"}
+                        {thread.other_party_name && (
+                          <span style={{ fontWeight: "400", fontSize: "13px" }}>{" "}({thread.other_party_name})</span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  {Number(thread.unread_count || 0) > 0 && (
-                    <div aria-hidden="true" style={{ backgroundColor: "#B46D92", minWidth: "18px", height: "18px", padding: "0 6px", borderRadius: "999px", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "11px" }}>
-                      {Number(thread.unread_count || 0) > 99 ? "99+" : Number(thread.unread_count || 0)}
-                    </div>
-                  )}
-                </button>
+                    {Number(thread.unread_count || 0) > 0 && (
+                      <div aria-hidden="true" style={{ backgroundColor: "#B46D92", minWidth: "18px", height: "18px", padding: "0 6px", borderRadius: "999px", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "11px" }}>
+                        {Number(thread.unread_count || 0) > 99 ? "99+" : Number(thread.unread_count || 0)}
+                      </div>
+                    )}
+                  </button>
+                </div>
               ))}
             </div>
           </div>
