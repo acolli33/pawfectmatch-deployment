@@ -5,27 +5,10 @@ import { useAuth } from '../auth/AuthContext.jsx';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 function getAvailabilityBadgeStyle(status) {
-  if (status === 'available') {
-    return {
-      color: '#355e3b',
-    };
-  }
-
-  if (status === 'pending') {
-    return {
-      color: '#7a6230',
-    };
-  }
-
-  if (status === 'adopted') {
-    return {
-      color: '#8a5a3b',
-    };
-  }
-
-  return {
-    color: '#5f5a52',
-  };
+  if (status === 'available') return { color: '#355e3b' };
+  if (status === 'pending') return { color: '#7a6230' };
+  if (status === 'adopted') return { color: '#8a5a3b' };
+  return { color: '#5f5a52' };
 }
 
 export default function ShelterListingsPage() {
@@ -39,19 +22,10 @@ export default function ShelterListingsPage() {
   const [openMenuId, setOpenMenuId] = useState(null);
 
   useEffect(() => {
-    const closeMenu = () => {
-      setOpenMenuId(null);
-    };
-
-    const handleEscape = (event) => {
-      if (event.key === 'Escape') {
-        setOpenMenuId(null);
-      }
-    };
-
+    const closeMenu = () => setOpenMenuId(null);
+    const handleEscape = (event) => { if (event.key === 'Escape') setOpenMenuId(null); };
     document.addEventListener('click', closeMenu);
     document.addEventListener('keydown', handleEscape);
-
     return () => {
       document.removeEventListener('click', closeMenu);
       document.removeEventListener('keydown', handleEscape);
@@ -61,31 +35,25 @@ export default function ShelterListingsPage() {
   useEffect(() => {
     const loadPageData = async () => {
       if (!user?.email || user.role !== 'shelter') return;
-
       try {
         const headers = {
           'Content-Type': 'application/json',
           'x-demo-email': user.email,
           'x-demo-role': user.role,
         };
-
         const [animalsResponse, shelterResponse] = await Promise.all([
           fetch(`${API_BASE_URL}/api/animals/mine`, { headers }),
           fetch(`${API_BASE_URL}/api/shelters/me`, { headers }),
         ]);
-
         const animalsResult = await animalsResponse.json();
         const shelterResult = await shelterResponse.json();
-
         if (!animalsResponse.ok || !animalsResult.ok) {
           setPageError(animalsResult.error || 'Failed to load listings');
           return;
         }
-
         if (shelterResponse.ok && shelterResult.ok && shelterResult.data?.organization_name) {
           setShelterName(shelterResult.data.organization_name);
         }
-
         setAnimals(animalsResult.data || []);
       } catch (error) {
         console.error('Failed to load listings:', error);
@@ -94,15 +62,12 @@ export default function ShelterListingsPage() {
         setLoading(false);
       }
     };
-
     loadPageData();
   }, [user]);
 
   const handleDelete = async (animalId) => {
     setOpenMenuId(null);
-
     if (!window.confirm('Delete this listing?')) return;
-
     try {
       const response = await fetch(`${API_BASE_URL}/api/animals/${animalId}`, {
         method: 'DELETE',
@@ -112,14 +77,11 @@ export default function ShelterListingsPage() {
           'x-demo-role': user.role,
         },
       });
-
       const result = await response.json();
-
       if (!response.ok || !result.ok) {
         setPageError(result.error || 'Failed to delete listing');
         return;
       }
-
       setAnimals((prev) => prev.filter((animal) => animal.id !== animalId));
     } catch (error) {
       console.error('Failed to delete listing:', error);
@@ -129,206 +91,183 @@ export default function ShelterListingsPage() {
 
   const toggleMenu = (event, animalId) => {
     event.stopPropagation();
-
-    setOpenMenuId((currentId) =>
-      currentId === animalId ? null : animalId
-    );
+    setOpenMenuId((currentId) => currentId === animalId ? null : animalId);
   };
 
   return (
-    <div style={{ background: '#fafafa', minHeight: '100vh', padding: '40px' }}>
-      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-          <h1>PawfectMatch</h1>
-          <p>{shelterName}</p>
-          <p style={{ color: '#666', marginTop: '10px' }}>
-            Manage your shelter&apos;s animal listings
-          </p>
-        </div>
+    <>
+      <style>{`
+        @media (max-width: 768px) {
+          .shelter-listings-card {
+            grid-template-columns: 1fr !important;
+          }
+          .shelter-listings-image {
+            min-height: 200px !important;
+          }
+          .shelter-listings-nav {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+          }
+          .shelter-listings-nav button {
+            margin-right: 0 !important;
+          }
+        }
+      `}</style>
 
-        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-          <button onClick={() => navigate('/animal/new')} style={{ marginRight: '12px' }}>
-            Create New Listing
-          </button>
-          <button onClick={() => navigate('/shelter-menu')} style={{ marginRight: '12px' }}>
-            Back to Dashboard
-          </button>
-          <button
-            onClick={() => {
-              logout();
-              navigate('/');
-            }}
-          >
-            Log Out
-          </button>
-        </div>
+      <div style={{ background: '#fafafa', minHeight: '100vh', padding: '40px' }}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
 
-        {pageError && (
-          <div
-            style={{
-              marginBottom: '20px',
-              padding: '12px 16px',
-              borderRadius: '6px',
-              border: '1px solid #dc2626',
-              background: '#fee2e2',
-              color: '#991b1b',
-              fontSize: '14px',
-            }}
-          >
-            {pageError}
-          </div>
-        )}
+          <header style={{ textAlign: 'center', marginBottom: '30px' }}>
+            <h1>PawfectMatch</h1>
+            <h2 style={{ fontSize: '16px', fontWeight: 'normal', margin: '5px 0' }}>{shelterName}</h2>
+            <p style={{ color: '#595959', marginTop: '10px' }}>
+              Manage your shelter&apos;s animal listings
+            </p>
+          </header>
 
-        {loading ? (
-          <p style={{ textAlign: 'center' }}>Loading listings...</p>
-        ) : animals.length === 0 ? (
-          <div
-            style={{
-              background: 'white',
-              padding: '30px',
-              borderRadius: '8px',
-              border: '1px solid #ddd',
-              textAlign: 'center',
-            }}
-          >
-            <h3 style={{ marginTop: 0 }}>No listings yet</h3>
-            <p style={{ color: '#666' }}>Create your first animal listing to get started.</p>
-          </div>
-        ) : (
-          <div style={{ display: 'grid', gap: '20px' }}>
-            {animals.map((animal) => (
+          <main>
+            <div style={{ textAlign: 'center', marginBottom: '30px' }} className="shelter-listings-nav">
+              <button onClick={() => navigate('/animal/new')} style={{ marginRight: '12px' }}>
+                Create New Listing
+              </button>
+              <button onClick={() => navigate('/shelter-menu')} style={{ marginRight: '12px' }}>
+                Back to Dashboard
+              </button>
+              <button onClick={() => { logout(); navigate('/'); }}>
+                Log Out
+              </button>
+            </div>
+
+            {pageError && (
               <div
-                key={animal.id}
+                role="alert"
                 style={{
-                  background: 'white',
-                  border: '1px solid #ddd',
-                  borderRadius: '10px',
-                  overflow: 'hidden',
-                  display: 'grid',
-                  gridTemplateColumns: '240px 1fr',
+                  marginBottom: '20px',
+                  padding: '12px 16px',
+                  borderRadius: '6px',
+                  border: '1px solid #dc2626',
+                  background: '#fee2e2',
+                  color: '#991b1b',
+                  fontSize: '14px',
                 }}
               >
-                <div style={{ background: '#f5f5f5', minHeight: '220px' }}>
-                  {animal.primary_photo_url ? (
-                    <img
-                      src={animal.primary_photo_url}
-                      alt={animal.name}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                      }}
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#666',
-                      }}
-                    >
-                      No Photo
-                    </div>
-                  )}
-                </div>
+                {pageError}
+              </div>
+            )}
 
-                <div style={{ padding: '20px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '20px' }}>
-                    <div>
-                      <h3 style={{ marginTop: 0, marginBottom: '10px' }}>{animal.name}</h3>
-
-                      <div style={{ marginBottom: '12px' }}>
-                        <span
-                          style={{
-                            display: 'inline-block',
-                            fontSize: '13px',
-                            fontWeight: '600',
-                            textTransform: 'capitalize',
-                            ...getAvailabilityBadgeStyle(animal.availability),
-                          }}
-                        >
-                          {animal.availability}
-                        </span>
-                      </div>
-
-                      <p style={{ margin: '4px 0' }}><strong>Type:</strong> {animal.type}</p>
-                      <p style={{ margin: '4px 0' }}><strong>Breed:</strong> {animal.breed || 'N/A'}</p>
-                      <p style={{ margin: '4px 0' }}><strong>Sex:</strong> {animal.sex}</p>
-                      <p style={{ margin: '4px 0' }}><strong>Size:</strong> {animal.size || 'N/A'}</p>
+            {loading ? (
+              <p style={{ textAlign: 'center' }}>Loading listings...</p>
+            ) : animals.length === 0 ? (
+              <div style={{ background: 'white', padding: '30px', borderRadius: '8px', border: '1px solid #ddd', textAlign: 'center' }}>
+                <h2 style={{ marginTop: 0, fontSize: '18px' }}>No listings yet</h2>
+                <p style={{ color: '#595959' }}>Create your first animal listing to get started.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gap: '20px' }}>
+                {animals.map((animal) => (
+                  <div
+                    key={animal.id}
+                    className="shelter-listings-card"
+                    style={{
+                      background: 'white',
+                      border: '1px solid #ddd',
+                      borderRadius: '10px',
+                      overflow: 'hidden',
+                      display: 'grid',
+                      gridTemplateColumns: '240px 1fr',
+                    }}
+                  >
+                    <div className="shelter-listings-image" style={{ background: '#f5f5f5', minHeight: '220px' }}>
+                      {animal.primary_photo_url ? (
+                        <img
+                          src={animal.primary_photo_url}
+                          alt={animal.name}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#595959' }}>
+                          No Photo
+                        </div>
+                      )}
                     </div>
 
-                    <div
-                      style={{
-                        position: 'relative',
-                        textAlign: 'right',
-                        minWidth: '44px',
-                      }}
-                      onClick={(event) => event.stopPropagation()}
-                    >
-                      <button
-                        type="button"
-                        aria-label={`Open actions for ${animal.name}`}
-                        aria-haspopup="menu"
-                        aria-expanded={openMenuId === animal.id}
-                        onClick={(event) => toggleMenu(event, animal.id)}
-                        style={styles.menuButton}
-                      >
-                        ⋯
-                      </button>
+                    <div style={{ padding: '20px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '20px' }}>
+                        <div>
+                          <h2 style={{ marginTop: 0, marginBottom: '10px', fontSize: '18px' }}>{animal.name}</h2>
+                          <div style={{ marginBottom: '12px' }}>
+                            <span style={{ display: 'inline-block', fontSize: '13px', fontWeight: '600', textTransform: 'capitalize', ...getAvailabilityBadgeStyle(animal.availability) }}>
+                              {animal.availability}
+                            </span>
+                          </div>
+                          <p style={{ margin: '4px 0' }}><strong>Type:</strong> {animal.type}</p>
+                          <p style={{ margin: '4px 0' }}><strong>Breed:</strong> {animal.breed || 'N/A'}</p>
+                          <p style={{ margin: '4px 0' }}><strong>Sex:</strong> {animal.sex}</p>
+                          <p style={{ margin: '4px 0' }}><strong>Size:</strong> {animal.size || 'N/A'}</p>
+                        </div>
 
-                      {openMenuId === animal.id && (
                         <div
-                          role="menu"
-                          aria-label={`Actions for ${animal.name}`}
-                          style={styles.dropdownMenu}
+                          style={{ position: 'relative', textAlign: 'right', minWidth: '44px' }}
                           onClick={(event) => event.stopPropagation()}
                         >
                           <button
                             type="button"
-                            role="menuitem"
-                            onClick={() => {
-                              setOpenMenuId(null);
-                              navigate(`/animal/${animal.id}/edit`);
-                            }}
-                            style={styles.dropdownItem}
+                            aria-label={`Open actions for ${animal.name}`}
+                            aria-haspopup="menu"
+                            aria-expanded={openMenuId === animal.id}
+                            onClick={(event) => toggleMenu(event, animal.id)}
+                            style={styles.menuButton}
                           >
-                            Edit Listing
+                            ⋯
                           </button>
 
-                          <button
-                            type="button"
-                            role="menuitem"
-                            onClick={() => handleDelete(animal.id)}
-                            style={{
-                              ...styles.dropdownItem,
-                              ...styles.deleteDropdownItem,
-                            }}
-                          >
-                            Delete Listing
-                          </button>
+                          {openMenuId === animal.id && (
+                            <div
+                              role="menu"
+                              aria-label={`Actions for ${animal.name}`}
+                              style={styles.dropdownMenu}
+                              onClick={(event) => event.stopPropagation()}
+                            >
+                              <button
+                                type="button"
+                                role="menuitem"
+                                onClick={() => { setOpenMenuId(null); navigate(`/animal/${animal.id}/edit`); }}
+                                style={styles.dropdownItem}
+                              >
+                                Edit Listing
+                              </button>
+                              <button
+                                type="button"
+                                role="menuitem"
+                                onClick={() => handleDelete(animal.id)}
+                                style={{ ...styles.dropdownItem, ...styles.deleteDropdownItem }}
+                              >
+                                Delete Listing
+                              </button>
+                            </div>
+                          )}
                         </div>
-                      )}
+                      </div>
+
+                      <p style={{ marginTop: '14px', color: '#555' }}>
+                        {animal.description}
+                      </p>
                     </div>
                   </div>
-
-                  <p style={{ marginTop: '14px', color: '#555' }}>
-                    {animal.description}
-                  </p>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
+            )}
 
-        <p style={{ textAlign: 'center', fontSize: '12px', color: '#999', marginTop: '30px' }}>
-          CS Capstone Project - Animal Adoption Matchmaker
-        </p>
+            <p style={{ textAlign: 'center', fontSize: '12px', color: '#595959', marginTop: '30px' }}>
+              CS Capstone Project - Animal Adoption Matchmaker
+            </p>
+          </main>
+
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
