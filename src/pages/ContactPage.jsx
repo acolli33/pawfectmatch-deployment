@@ -21,11 +21,13 @@ export default function ContactPage() {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [availableAnimals, setAvailableAnimals] = useState([]);
+  const [sending, setSending] = useState(false);
  
   const activeChatIdRef = useRef(null);
   const threadsRef = useRef([]);
   const userRef = useRef(null);
   const chatBoxRef = useRef(null);
+  const isAtBottomRef = useRef(true);
  
   useEffect(() => {
     activeChatIdRef.current = activeChatId;
@@ -39,20 +41,19 @@ export default function ContactPage() {
     userRef.current = user;
   }, [user]);
  
-useEffect(() => {
+  useEffect(() => {
     if (!activeChatId) return;
     if (loadingMessages) return;
     if (!chatBoxRef.current) return;
-    if (!messages.length) return;
 
     requestAnimationFrame(() => {
-      if (!chatBoxRef.current) return;
-
       chatBoxRef.current.scrollTop =
         chatBoxRef.current.scrollHeight;
+
+      isAtBottomRef.current = true;
     });
-  }, [activeChatId, loadingMessages, messages.length]);
-  
+    }, [activeChatId, loadingMessages]);
+
   const getHeaders = () => ({
     "Content-Type": "application/json",
     "x-demo-email": user?.email,
@@ -104,7 +105,6 @@ useEffect(() => {
       setActiveChatId(matchingThread.id);
     }
   }, [searchParams, threads]);
-
 
   const markThreadRead = async (threadId) => {
     if (!threadId || !user) return;
@@ -162,17 +162,21 @@ useEffect(() => {
  
         const isActiveThread =
           String(t.id) === String(currentActiveChatId);
- 
+
+          const shouldCountUnread =
+            !isMine &&
+            (
+              !isActiveThread ||
+              !isAtBottomRef.current
+            );
+
         return {
           ...t,
           last_message: newMessage.content,
           last_message_time: newMessage.created_at,
-          unread_count:
-            !isMine && !isActiveThread
-              ? Number(t.unread_count || 0) + 1
-              : isActiveThread
-                ? 0
-                : Number(t.unread_count || 0),
+          unread_count: shouldCountUnread
+            ? Number(t.unread_count || 0) + 1
+            : Number(t.unread_count || 0)
         };
       });
  
@@ -208,6 +212,7 @@ useEffect(() => {
  
         const result = await res.json();
         setMessages(Array.isArray(result.data) ? result.data : []);
+        await markThreadRead(activeChatId);
        } finally {
         setLoadingMessages(false);
       }
@@ -216,40 +221,43 @@ useEffect(() => {
     loadMessages();
   }, [activeChatId, user]);
 
-  useEffect(() => {
-    if (!activeChatId || !user || loadingMessages) return;
-    markThreadRead(activeChatId);
-  }, [activeChatId, loadingMessages, user]);
  
   const handleSend = async () => {
+    if (sending) return;
     if (!message.trim() || !activeChatId || !user) return;
- 
-    const res = await fetch(
-      `${API_BASE_URL}/api/messages/threads/${activeChatId}/messages`,
-      {
-        method: "POST",
-        headers: getHeaders(),
-        body: JSON.stringify({ content: message }),
-      }
-    );
- 
-    const result = await res.json();
-    const newMessage = result.data;
+
+    setSending(true);
+    
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/messages/threads/${activeChatId}/messages`,
+        {
+          method: "POST",
+          headers: getHeaders(),
+          body: JSON.stringify({ content: message }),
+        }
+      );
+    
+      const result = await res.json();
+      const newMessage = result.data;
    
-    setMessage("");
+      setMessage("");
  
-    setMessages(prev => {
-      const currentMessages = Array.isArray(prev) ? prev : [];
-      const exists = currentMessages.some(m => String(m.id) === String(newMessage.id));
+      setMessages(prev => {
+        const currentMessages = Array.isArray(prev) ? prev : [];
+        const exists = currentMessages.some(m => String(m.id) === String(newMessage.id));
  
-      if (exists) {
-        return currentMessages;
-      }
+        if (exists) {
+          return currentMessages;
+        }
  
-      return [...currentMessages, newMessage];
-    });
+        return [...currentMessages, newMessage];
+      });
  
-    updateThreadForNewMessage(newMessage);
+      updateThreadForNewMessage(newMessage);
+    } finally {
+      setSending(false);
+    }
   };
  
   useEffect(() => {
@@ -295,7 +303,16 @@ useEffect(() => {
           );
         }
  
-        if (String(newMessage.thread_id) === String(activeChatId)) {
+        if (String(newMessage.thread_id) === String(activeChatId) && !isMine) {
+          const wasAtBottom = isAtBottomRef.current;
+          if (wasAtBottom) {
+            await markThreadRead(activeChatIdRef.current);
+          
+            requestAnimationFrame(() => {
+              chatBoxRef.current.scrollTop =
+                chatBoxRef.current.scrollHeight;
+            });
+          }
           const res = await fetch(
             `${API_BASE_URL}/api/messages/threads/${activeChatIdRef.current}?_=${Date.now()}`,
             {
@@ -309,7 +326,6 @@ useEffect(() => {
           );
           const result = await res.json();
           setMessages(Array.isArray(result.data) ? result.data : []);
- 
         }
  
         updateThreadForNewMessage(newMessage);
@@ -347,9 +363,7 @@ useEffect(() => {
  
     const interval = setInterval(() => {
       const currentActiveChatId = activeChatIdRef.current;
- 
-      loadThreads(false);
- 
+  
       if (currentActiveChatId) {
         fetch(
           `${API_BASE_URL}/api/messages/threads/${currentActiveChatId}?_=${Date.now()}`,
@@ -434,9 +448,11 @@ useEffect(() => {
   };
 
   const handleChatScroll = async () => {
+    const atBottom = isAtBottom();
+    isAtBottomRef.current = atBottom;
     if (!activeChatId) return;
   
-    if (isAtBottom()) {
+    if (atBottom) {
       await markThreadRead(activeChatId);
     }
   };
@@ -671,8 +687,12 @@ useEffect(() => {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
               />
-              <button style={styles.button} onClick={handleSend}>
-                Send
+              <button 
+                style={styles.button} 
+                onClick={handleSend}
+                disabled={sending}
+              >
+                {sending ? "Sending..." : "Send"}
               </button>
             </div>
             )}
