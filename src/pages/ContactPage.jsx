@@ -21,17 +21,12 @@ export default function ContactPage() {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [availableAnimals, setAvailableAnimals] = useState([]);
-<<<<<<< HEAD
   const [sending, setSending] = useState(false);
  
-=======
-
->>>>>>> origin/master
   const activeChatIdRef = useRef(null);
   const threadsRef = useRef([]);
   const userRef = useRef(null);
   const chatBoxRef = useRef(null);
-<<<<<<< HEAD
   const isAtBottomRef = useRef(true);
  
   useEffect(() => {
@@ -58,23 +53,6 @@ export default function ContactPage() {
       isAtBottomRef.current = true;
     });
     }, [activeChatId, loadingMessages]);
-=======
-
-  useEffect(() => { activeChatIdRef.current = activeChatId; }, [activeChatId]);
-  useEffect(() => { threadsRef.current = Array.isArray(threads) ? threads : []; }, [threads]);
-  useEffect(() => { userRef.current = user; }, [user]);
-
-  useEffect(() => {
-    if (!activeChatId) return;
-    if (loadingMessages) return;
-    if (!chatBoxRef.current) return;
-    if (!messages.length) return;
-    requestAnimationFrame(() => {
-      if (!chatBoxRef.current) return;
-      chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
-    });
-  }, [activeChatId, loadingMessages, messages.length]);
->>>>>>> origin/master
 
   const getHeaders = () => ({
     "Content-Type": "application/json",
@@ -85,29 +63,44 @@ export default function ContactPage() {
 
   const loadThreads = async (showLoading = false) => {
     if (!user) return;
+
     try {
-      if (showLoading) setLoadingThreads(true);
+      if (showLoading) {
+        setLoadingThreads(true);
+      }
+
       const res = await fetch(`${API_BASE_URL}/api/messages/threads?_=${Date.now()}`, {
         headers: getHeaders(),
         cache: "no-store",
       });
+
       const result = await res.json();
-      if (!res.ok) { console.error(result.error); return; }
+      if (!res.ok) { 
+        console.error(result.error); 
+        return; 
+      }
+
       setThreads(Array.isArray(result.data) ? result.data : []);
     } catch (err) {
       console.error(err);
     } finally {
-      if (showLoading) setLoadingThreads(false);
+      if (showLoading) {
+        setLoadingThreads(false);
     }
-  };
+  }
+};
+
 
   useEffect(() => {
     const threadId = searchParams.get("threadId");
+
     if (!threadId) return;
     if (!Array.isArray(threads)) return;
+
     const matchingThread = threads.find(
       (thread) => String(thread.id) === String(threadId)
     );
+
     if (matchingThread) {
       setActiveChatId(matchingThread.id);
     }
@@ -115,37 +108,54 @@ export default function ContactPage() {
 
   const markThreadRead = async (threadId) => {
     if (!threadId || !user) return;
-    await fetch(`${API_BASE_URL}/api/messages/threads/${threadId}/read`, {
+
+    await fetch(
+      `${API_BASE_URL}/api/messages/threads/${threadId}/read`, 
+      {
       method: "PATCH",
       headers: getHeaders(),
-    });
+      }
+    );
+
     setThreads(prev => {
       const currentThreads = Array.isArray(prev) ? prev : [];
+
       return currentThreads.map(t =>
-        String(t.id) === String(threadId) ? { ...t, unread_count: 0 } : t
+        String(t.id) === String(threadId) 
+        ? { ...t, unread_count: 0 } 
+        : t
       );
     });
   };
 
   const isAtBottom = () => {
     if (!chatBoxRef.current) return false;
-    const { scrollTop, scrollHeight, clientHeight } = chatBoxRef.current;
+
+    const { scrollTop, scrollHeight, clientHeight } = 
+      chatBoxRef.current;
+
     return scrollHeight - scrollTop - clientHeight < 30;
   };
 
   const getCurrentUserIdForThread = (thread) => {
     if (!thread || !userRef.current) return null;
-    return userRef.current.role === "adopter" ? thread.adopter_id : thread.shelter_user_id;
+
+    return userRef.current.role === "adopter" 
+      ? thread.adopter_id 
+      : thread.shelter_user_id;
   };
 
   const updateThreadForNewMessage = (newMessage) => {
     setThreads(prev => {
       const currentThreads = Array.isArray(prev) ? prev : [];
       const currentActiveChatId = activeChatIdRef.current;
+
       const updated = currentThreads.map(t => {
-        if (String(t.id) !== String(newMessage.thread_id)) return t;
+        if (String(t.id) !== String(newMessage.thread_id)) {
+          return t;
+        }
+        
         const currentUserId = getCurrentUserIdForThread(t);
-<<<<<<< HEAD
         const isMine =
           currentUserId &&
           String(newMessage.sender_id) === String(currentUserId);
@@ -160,28 +170,16 @@ export default function ContactPage() {
               !isAtBottomRef.current
             );
 
-=======
-        const isMine = currentUserId && String(newMessage.sender_id) === String(currentUserId);
-        const isActiveThread = String(t.id) === String(currentActiveChatId);
->>>>>>> origin/master
         return {
           ...t,
           last_message: newMessage.content,
           last_message_time: newMessage.created_at,
-<<<<<<< HEAD
           unread_count: shouldCountUnread
             ? Number(t.unread_count || 0) + 1
             : Number(t.unread_count || 0)
-=======
-          unread_count:
-            !isMine && !isActiveThread
-              ? Number(t.unread_count || 0) + 1
-              : isActiveThread
-              ? 0
-              : Number(t.unread_count || 0),
->>>>>>> origin/master
         };
       });
+
       return [...updated].sort(
         (a, b) =>
           new Date(b.last_message_time || b.updated_at || b.created_at || 0) -
@@ -190,10 +188,13 @@ export default function ContactPage() {
     });
   };
 
-  useEffect(() => { loadThreads(true); }, [user]);
+  useEffect(() => { 
+    loadThreads(true); 
+  }, [user]);
 
   useEffect(() => {
     if (!activeChatId || !user) return;
+
     const loadMessages = async () => {
       try {
         setLoadingMessages(true);
@@ -208,33 +209,21 @@ export default function ContactPage() {
             cache: "no-store",
           }
         );
+
         const result = await res.json();
         setMessages(Array.isArray(result.data) ? result.data : []);
-<<<<<<< HEAD
         await markThreadRead(activeChatId);
        } finally {
-=======
-      } finally {
->>>>>>> origin/master
         setLoadingMessages(false);
       }
     };
+
     loadMessages();
   }, [activeChatId, user]);
 
-<<<<<<< HEAD
- 
-=======
-  useEffect(() => {
-    if (!activeChatId || !user || loadingMessages) return;
-    markThreadRead(activeChatId);
-  }, [activeChatId, loadingMessages, user]);
-
->>>>>>> origin/master
   const handleSend = async () => {
     if (sending) return;
     if (!message.trim() || !activeChatId || !user) return;
-<<<<<<< HEAD
 
     setSending(true);
     
@@ -268,70 +257,50 @@ export default function ContactPage() {
     } finally {
       setSending(false);
     }
-=======
-    const res = await fetch(
-      `${API_BASE_URL}/api/messages/threads/${activeChatId}/messages`,
-      { method: "POST", headers: getHeaders(), body: JSON.stringify({ content: message }) }
-    );
-    const result = await res.json();
-    const newMessage = result.data;
-    setMessage("");
-    setMessages(prev => {
-      const currentMessages = Array.isArray(prev) ? prev : [];
-      const exists = currentMessages.some(m => String(m.id) === String(newMessage.id));
-      if (exists) return currentMessages;
-      return [...currentMessages, newMessage];
-    });
-    updateThreadForNewMessage(newMessage);
->>>>>>> origin/master
   };
 
   useEffect(() => {
     if (!user) return;
+
     const channel = supabase
       .channel("messages-realtime")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" },
+      .on(
+        "postgres_changes", 
+        { 
+          event: "INSERT", 
+          schema: "public", 
+          table: "messages" 
+        },
         async (payload) => {
           const newMessage = payload.new;
           const activeChatId = activeChatIdRef.current;
+
           if (!newMessage) return;
+
           const currentThreads = threadsRef.current;
-          const messageThread = currentThreads.find(t => String(t.id) === String(newMessage.thread_id));
-          if (!messageThread) { await loadThreads(false); return; }
-          const currentUserId = getCurrentUserIdForThread(messageThread);
-          const isMine = currentUserId && String(newMessage.sender_id) === String(currentUserId);
-          if (!isMine) {
-            await fetch(`${API_BASE_URL}/api/messages/${newMessage.id}/delivered`, {
-              method: "PATCH",
-              headers: getHeaders(),
-            });
+          const messageThread = currentThreads.find(
+            t => String(t.id) === String(newMessage.thread_id)
+          );
+
+          if (!messageThread) { 
+            await loadThreads(false); 
+            return; 
           }
-          if (String(newMessage.thread_id) === String(activeChatId)) {
-            const res = await fetch(
-              `${API_BASE_URL}/api/messages/threads/${activeChatIdRef.current}?_=${Date.now()}`,
+
+          const currentUserId = getCurrentUserIdForThread(messageThread);
+          const isMine = 
+            currentUserId && 
+            String(newMessage.sender_id) === String(currentUserId);
+
+          if (!isMine) {
+            await fetch(
+              `${API_BASE_URL}/api/messages/${newMessage.id}/delivered`, 
               {
-                headers: {
-                  "x-demo-email": user.email,
-                  "x-demo-role": user.role,
-                  "x-demo-token": localStorage.getItem("pm_token"),
-                },
-                cache: "no-store",
+                method: "PATCH",
+                headers: getHeaders(),
               }
             );
-            const result = await res.json();
-            setMessages(Array.isArray(result.data) ? result.data : []);
           }
-          updateThreadForNewMessage(newMessage);
-        }
-      )
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages" },
-        (payload) => {
-          const updatedMessage = payload.new;
-          setMessages(prev =>
-            prev.map(m => String(m.id) === String(updatedMessage.id) ? updatedMessage : m)
-          );
-        }
-<<<<<<< HEAD
  
         if (String(newMessage.thread_id) === String(activeChatId) && !isMine) {
           const wasAtBottom = isAtBottomRef.current;
@@ -386,32 +355,30 @@ export default function ContactPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-=======
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
->>>>>>> origin/master
   }, [user]);
 
   useEffect(() => {
     if (!user) return;
+
     const interval = setInterval(() => {
       const currentActiveChatId = activeChatIdRef.current;
-<<<<<<< HEAD
   
-=======
-      loadThreads(false);
->>>>>>> origin/master
       if (currentActiveChatId) {
         fetch(
           `${API_BASE_URL}/api/messages/threads/${currentActiveChatId}?_=${Date.now()}`,
-          { headers: getHeaders(), cache: "no-store" }
+          { 
+            headers: getHeaders(), 
+            cache: "no-store" 
+          }
         )
           .then(res => res.json())
-          .then(result => { setMessages(Array.isArray(result.data) ? result.data : []); })
+          .then(result => { 
+            setMessages(Array.isArray(result.data) ? result.data : []); 
+          })
           .catch(err => console.error(err));
       }
     }, 1000);
+
     return () => clearInterval(interval);
   }, [user]);
 
@@ -419,10 +386,16 @@ export default function ContactPage() {
     try {
       const res = await fetch(
         `${API_BASE_URL}/api/messages/available-animals?_=${Date.now()}`,
-        { headers: getHeaders(), cache: "no-store" }
+        { 
+          headers: getHeaders(), 
+          cache: "no-store" 
+        }
       );
+
       const result = await res.json();
+
       setAvailableAnimals(result.data || []);
+
       setShowNewChatModal(true);
     } catch (err) {
       console.error(err);
@@ -431,23 +404,43 @@ export default function ContactPage() {
 
   const handleCreateThread = async (animalId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/messages/threads`, {
-        method: "POST",
-        headers: getHeaders(),
-        body: JSON.stringify({ animal_id: animalId }),
-      });
+      const res = await fetch(
+        `${API_BASE_URL}/api/messages/threads`, 
+        {
+          method: "POST",
+          headers: getHeaders(),
+          body: JSON.stringify({ 
+            animal_id: animalId 
+          }),
+      }
+    );
+
       const result = await res.json();
-      if (!res.ok) { console.error(result.error); return; }
+
+      if (!res.ok) {
+        console.error(result.error); 
+        return; 
+      }
+
       const newThread = result.data;
+
       setThreads(prev => {
         const currentThreads = Array.isArray(prev) ? prev : [];
         const exists = currentThreads.some(t => String(t.id) === String(newThread.id));
-        if (exists) return currentThreads;
+
+        if (exists) {
+          return currentThreads;
+        }
+
         return [newThread, ...currentThreads];
       });
+
       setActiveChatId(newThread.id);
+
       setShowNewChatModal(false);
+
       await loadThreads(false);
+
     } catch (err) {
       console.error(err);
     }
@@ -457,14 +450,10 @@ export default function ContactPage() {
     const atBottom = isAtBottom();
     isAtBottomRef.current = atBottom;
     if (!activeChatId) return;
-<<<<<<< HEAD
   
     if (atBottom) {
       await markThreadRead(activeChatId);
     }
-=======
-    if (isAtBottom()) await markThreadRead(activeChatId);
->>>>>>> origin/master
   };
 
   const styles = {
@@ -588,7 +577,9 @@ export default function ContactPage() {
                 return (
                   <div key={msg.id || idx} style={{ display: "flex", justifyContent: isMine ? "flex-end" : "flex-start", marginBottom: "10px" }}>
                     <div style={{ ...styles.message, backgroundColor: isMine ? "#2F3A56" : "#D7C3AE", color: isMine ? "#FFF7ED" : "#2C2C34" }}>
-                      <div>{msg.content}</div>
+                    <div style={{ whiteSpace: "pre-wrap" }}>
+                      {msg.content}
+                    </div>
                       <div style={{ fontSize: "11px", marginTop: "4px", opacity: 1, color: isMine ? "#ffffff" : "#1f2937" }}>
                         {new Date(msg.created_at).toLocaleTimeString()}
                         {isMine && (
@@ -610,7 +601,6 @@ export default function ContactPage() {
               <textarea id="messageInput" aria-label="Type a message" style={styles.textarea} rows={2} value={message} onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
               />
-<<<<<<< HEAD
               <button 
                 style={styles.button} 
                 onClick={handleSend}
@@ -618,9 +608,6 @@ export default function ContactPage() {
               >
                 {sending ? "Sending..." : "Send"}
               </button>
-=======
-              <button style={styles.button} onClick={handleSend}>Send</button>
->>>>>>> origin/master
             </div>
           )}
         </main>
