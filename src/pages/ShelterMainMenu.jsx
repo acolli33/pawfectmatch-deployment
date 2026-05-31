@@ -19,6 +19,7 @@ export default function ShelterMainMenu() {
             'Content-Type': 'application/json',
             'x-demo-email': user.email,
             'x-demo-role': user.role,
+            'x-demo-token': localStorage.getItem('pm_token'),
           },
         });
 
@@ -48,7 +49,7 @@ export default function ShelterMainMenu() {
         </div>
 
         {/* Demo Badge */}
-        <div
+        {/* <div
           style={{
             background: '#fff9e6',
             border: '1px solid #ffe066',
@@ -60,14 +61,14 @@ export default function ShelterMainMenu() {
             <p style={{ margin: 0, fontSize: '14px' }}>
             Demo - Test account mode
           </p>
-        </div>
+        </div> */}
 
         {/* Main Action Cards */}
         <div style={{ marginBottom: '30px' }}>
           <div className="card" onClick={() => navigate('/shelter-listings')} style={{ marginBottom: '20px', width: '100%' }}>
-            <h3>Manage Animal Listings</h3>
-            <p>Create, edit, and remove animal profiles.</p>
-            <button>Manage Animals</button>
+            <h3>Manage Pet Listings</h3>
+            <p>Create, edit, and remove pet profiles.</p>
+            <button>Manage Pets</button>
           </div>
 
           <div className="card" onClick={() => navigate('/contact')} style={{ marginBottom: '20px', width: '100%' }}>

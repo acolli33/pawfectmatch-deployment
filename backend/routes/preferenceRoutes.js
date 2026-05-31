@@ -98,6 +98,7 @@ router.put('/me', requireAuth, requireRole(['adopter']), async (req, res) => {
   const {
     animalTypes,
     breeds,
+    search_location,
     agePreference,
     sizePreference,
     disposition,
@@ -166,6 +167,7 @@ router.put('/me', requireAuth, requireRole(['adopter']), async (req, res) => {
         user_id,
         animal_types,
         breeds,
+        search_location,
         age_preference,
         size_preferences,
         good_with_children,
@@ -173,11 +175,12 @@ router.put('/me', requireAuth, requireRole(['adopter']), async (req, res) => {
         max_distance,
         additional_notes
       )
-      values ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+      values ($1,$2,$3,$4,$5,$6,$7,$8,$9, $10)
       on conflict (user_id)
       do update set
         animal_types = excluded.animal_types,
         breeds = excluded.breeds,
+        search_location = excluded.search_location,
         age_preference = excluded.age_preference,
         size_preferences = excluded.size_preferences,
         good_with_children = excluded.good_with_children,
@@ -191,6 +194,7 @@ router.put('/me', requireAuth, requireRole(['adopter']), async (req, res) => {
         profile.id,
         normalizedAnimalTypes,
         parsedBreeds,
+        search_location?.trim() || '',
         normalizedAgePreference,
         normalizedSizePreferences,
         !!disposition?.goodWithChildren,

@@ -40,6 +40,7 @@ export default function ShelterListingsPage() {
           'Content-Type': 'application/json',
           'x-demo-email': user.email,
           'x-demo-role': user.role,
+          "x-demo-token": localStorage.getItem("pm_token"),
         };
         const [animalsResponse, shelterResponse] = await Promise.all([
           fetch(`${API_BASE_URL}/api/animals/mine`, { headers }),
@@ -75,6 +76,7 @@ export default function ShelterListingsPage() {
           'Content-Type': 'application/json',
           'x-demo-email': user.email,
           'x-demo-role': user.role,
+          "x-demo-token": localStorage.getItem("pm_token"),
         },
       });
       const result = await response.json();

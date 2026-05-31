@@ -226,7 +226,7 @@ router.patch('/threads/:id/read', requireAuth, async (req, res) => {
   }
 });
 
-router.patch('/messages/:id/delivered', requireAuth, async (req, res) => {
+router.patch('/:id/delivered', requireAuth, async (req, res) => {
   try {
     const userContext = await getUserContext(req.user.email);
     const { profile } = userContext;

@@ -24,251 +24,48 @@ const colors = {
 };
 
 const styles = {
-  container: {
-    display: 'flex',
-    height: '100vh',
-    fontFamily: 'Arial, sans-serif',
-    backgroundColor: colors.otherTan,
-  },
-  leftPanel: {
-    width: '380px',
-    backgroundColor: colors.softTan,
-    borderRight: `1px solid ${colors.tan}`,
-    overflowY: 'auto',
-  },
+  container: { display: 'flex', height: '100vh', fontFamily: 'Arial, sans-serif', backgroundColor: colors.otherTan },
+  leftPanel: { width: '380px', backgroundColor: colors.softTan, borderRight: `1px solid ${colors.tan}`, overflowY: 'auto' },
   leftContent: { padding: '40px 30px' },
-  leftTitle: {
-    fontSize: '28px',
-    fontWeight: 'bold',
-    color: colors.navy,
-    marginBottom: '16px',
-    marginTop: 0,
-  },
-  leftDescription: {
-    fontSize: '15px',
-    color: colors.text,
-    lineHeight: '1.6',
-    marginBottom: '30px',
-  },
+  leftTitle: { fontSize: '28px', fontWeight: 'bold', color: colors.navy, marginBottom: '16px', marginTop: 0 },
+  leftDescription: { fontSize: '15px', color: colors.text, lineHeight: '1.6', marginBottom: '30px' },
   infoSection: { marginBottom: '30px' },
-  infoTitle: {
-    fontSize: '16px',
-    fontWeight: '600',
-    color: colors.navy,
-    marginBottom: '12px',
-    marginTop: 0,
-  },
-  infoList: {
-    margin: 0,
-    paddingLeft: '20px',
-    color: colors.text,
-    fontSize: '14px',
-    lineHeight: '1.8',
-  },
-  backButton: {
-    marginTop: '20px',
-    padding: '10px 20px',
-    backgroundColor: colors.navy,
-    color: colors.cream,
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontSize: '14px',
-    width: '100%',
-  },
-  rightPanel: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    backgroundColor: colors.cream,
-    overflowY: 'auto',
-  },
-  formHeader: {
-    padding: '30px 40px',
-    borderBottom: `1px solid ${colors.navy}`,
-    backgroundColor: colors.otherTan,
-  },
-  formTitle: {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    color: colors.navy,
-    margin: '0 0 8px 0',
-  },
+  infoTitle: { fontSize: '16px', fontWeight: '600', color: colors.navy, marginBottom: '12px', marginTop: 0 },
+  infoList: { margin: 0, paddingLeft: '20px', color: colors.text, fontSize: '14px', lineHeight: '1.8' },
+  backButton: { marginTop: '20px', padding: '10px 20px', backgroundColor: colors.navy, color: colors.cream, border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', width: '100%' },
+  rightPanel: { flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: colors.cream, overflowY: 'auto' },
+  formHeader: { padding: '30px 40px', borderBottom: `1px solid ${colors.navy}`, backgroundColor: colors.otherTan },
+  formTitle: { fontSize: '24px', fontWeight: 'bold', color: colors.navy, margin: '0 0 8px 0' },
   formSubtitle: { fontSize: '14px', color: colors.text, margin: 0 },
   formContent: { padding: '40px', maxWidth: '800px' },
-  sectionHeader: {
-    marginTop: '40px',
-    marginBottom: '24px',
-    paddingBottom: '12px',
-    borderBottom: `2px solid ${colors.tan}`,
-  },
-  sectionTitle: {
-    fontSize: '18px',
-    fontWeight: '600',
-    color: colors.navy,
-    margin: 0,
-  },
+  sectionHeader: { marginTop: '40px', marginBottom: '24px', paddingBottom: '12px', borderBottom: `2px solid ${colors.tan}` },
+  sectionTitle: { fontSize: '18px', fontWeight: '600', color: colors.navy, margin: 0 },
   section: { marginBottom: '24px' },
-  gridTwo: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '20px',
-    marginBottom: '24px',
-  },
-  label: {
-    display: 'block',
-    fontSize: '14px',
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: '6px',
-  },
-  helpText: {
-    fontSize: '13px',
-    color: colors.text,
-    marginBottom: '8px',
-    marginTop: '-4px',
-  },
-  input: {
-    width: '100%',
-    padding: '10px 12px',
-    border: `1px solid ${colors.tan}`,
-    borderRadius: '6px',
-    fontSize: '14px',
-    boxSizing: 'border-box',
-    fontFamily: 'Arial, sans-serif',
-    backgroundColor: colors.otherTan,
-    color: colors.text,
-  },
-  select: {
-    width: '100%',
-    padding: '10px 12px',
-    border: `1px solid ${colors.tan}`,
-    borderRadius: '6px',
-    fontSize: '14px',
-    backgroundColor: colors.otherTan,
-    color: colors.text,
-    cursor: 'pointer',
-    fontFamily: 'Arial, sans-serif',
-  },
-  textarea: {
-    width: '100%',
-    padding: '10px 12px',
-    border: `1px solid ${colors.tan}`,
-    borderRadius: '6px',
-    fontSize: '14px',
-    resize: 'vertical',
-    boxSizing: 'border-box',
-    fontFamily: 'Arial, sans-serif',
-    backgroundColor: colors.otherTan,
-    color: colors.text,
-  },
+  gridTwo: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' },
+  label: { display: 'block', fontSize: '14px', fontWeight: '600', color: colors.text, marginBottom: '6px' },
+  helpText: { fontSize: '13px', color: colors.text, marginBottom: '8px', marginTop: '-4px' },
+  input: { width: '100%', padding: '10px 12px', border: `1px solid ${colors.tan}`, borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box', fontFamily: 'Arial, sans-serif', backgroundColor: colors.otherTan, color: colors.text },
+  select: { width: '100%', padding: '10px 12px', border: `1px solid ${colors.tan}`, borderRadius: '6px', fontSize: '14px', backgroundColor: colors.otherTan, color: colors.text, cursor: 'pointer', fontFamily: 'Arial, sans-serif' },
+  textarea: { width: '100%', padding: '10px 12px', border: `1px solid ${colors.tan}`, borderRadius: '6px', fontSize: '14px', resize: 'vertical', boxSizing: 'border-box', fontFamily: 'Arial, sans-serif', backgroundColor: colors.otherTan, color: colors.text },
   checkboxGroup: { display: 'flex', flexDirection: 'column', gap: '12px' },
-  checkboxLabel: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    fontSize: '14px',
-    color: colors.text,
-    cursor: 'pointer',
-  },
+  checkboxLabel: { display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: colors.text, cursor: 'pointer' },
   checkbox: { width: '18px', height: '18px', cursor: 'pointer', accentColor: colors.mauve },
   uploadLabel: { cursor: 'pointer', display: 'block' },
   fileInput: { display: 'none' },
-  uploadBox: {
-    border: '2px dashed #d1d5db',
-    borderRadius: '8px',
-    padding: '30px',
-    textAlign: 'center',
-    backgroundColor: colors.otherTan,
-    transition: 'border-color 0.2s',
-  },
-  uploadText: {
-    fontSize: '15px',
-    fontWeight: '600',
-    color: colors.text,
-    margin: '0 0 4px 0',
-  },
+  uploadBox: { border: '2px dashed #d1d5db', borderRadius: '8px', padding: '30px', textAlign: 'center', backgroundColor: colors.otherTan, transition: 'border-color 0.2s' },
+  uploadText: { fontSize: '15px', fontWeight: '600', color: colors.text, margin: '0 0 4px 0' },
   uploadSubtext: { fontSize: '13px', color: colors.text, margin: 0 },
-  photoGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '16px',
-    marginTop: '16px',
-  },
-  photoItem: {
-    position: 'relative',
-    aspectRatio: '1',
-    borderRadius: '8px',
-    overflow: 'hidden',
-    border: `1px solid ${colors.tan}`,
-  },
+  photoGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginTop: '16px' },
+  photoItem: { position: 'relative', aspectRatio: '1', borderRadius: '8px', overflow: 'hidden', border: `1px solid ${colors.tan}` },
   photoPreview: { width: '100%', height: '100%', objectFit: 'cover' },
-  removeButton: {
-    position: 'absolute',
-    top: '8px',
-    right: '8px',
-    width: '28px',
-    height: '28px',
-    backgroundColor: '#b94b4b',
-    color: colors.cream,
-    border: 'none',
-    borderRadius: '50%',
-    cursor: 'pointer',
-    fontSize: '20px',
-    lineHeight: '1',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryBadge: {
-    position: 'absolute',
-    bottom: '8px',
-    left: '8px',
-    backgroundColor: colors.mauve,
-    color: colors.cream,
-    padding: '4px 8px',
-    borderRadius: '4px',
-    fontSize: '11px',
-    fontWeight: '600',
-  },
+  removeButton: { position: 'absolute', top: '8px', right: '8px', width: '28px', height: '28px', backgroundColor: '#b94b4b', color: colors.cream, border: 'none', borderRadius: '50%', cursor: 'pointer', fontSize: '20px', lineHeight: '1', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  primaryBadge: { position: 'absolute', bottom: '8px', left: '8px', backgroundColor: colors.mauve, color: colors.cream, padding: '4px 8px', borderRadius: '4px', fontSize: '11px', fontWeight: '600' },
   charCount: { textAlign: 'right', fontSize: '12px', color: colors.text, marginTop: '4px' },
-  statusMessage: {
-    padding: '12px 16px',
-    borderRadius: '6px',
-    border: '1px solid',
-    marginBottom: '24px',
-    fontSize: '14px',
-  },
+  statusMessage: { padding: '12px 16px', borderRadius: '6px', border: '1px solid', marginBottom: '24px', fontSize: '14px' },
   errorText: { color: '#dc2626', fontSize: '13px', marginTop: '6px' },
-  buttonContainer: {
-    marginTop: '40px',
-    paddingTop: '24px',
-    borderTop: `1px solid ${colors.tan}`,
-    display: 'flex',
-    gap: '12px',
-  },
-  submitButton: {
-    flex: 1,
-    padding: '14px',
-    backgroundColor: colors.navy,
-    color: colors.cream,
-    border: 'none',
-    borderRadius: '6px',
-    fontSize: '15px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'background-color 0.2s',
-  },
-  cancelButton: {
-    padding: '14px 24px',
-    backgroundColor: colors.softTan,
-    color: colors.text,
-    border: `2px solid ${colors.tan}`,
-    borderRadius: '6px',
-    fontSize: '15px',
-    fontWeight: '600',
-    cursor: 'pointer',
-  },
+  buttonContainer: { marginTop: '40px', paddingTop: '24px', borderTop: `1px solid ${colors.tan}`, display: 'flex', gap: '12px' },
+  submitButton: { flex: 1, padding: '14px', backgroundColor: colors.navy, color: colors.cream, border: 'none', borderRadius: '6px', fontSize: '15px', fontWeight: '600', cursor: 'pointer', transition: 'background-color 0.2s' },
+  cancelButton: { padding: '14px 24px', backgroundColor: colors.softTan, color: colors.text, border: `2px solid ${colors.tan}`, borderRadius: '6px', fontSize: '15px', fontWeight: '600', cursor: 'pointer' },
 };
 
 export default function AnimalProfileForm() {
@@ -287,6 +84,7 @@ export default function AnimalProfileForm() {
     size: '',
     weightLbs: '',
     color: '',
+    adoption_fee: '',
     disposition: {
       goodWithChildren: false,
       goodWithOtherAnimals: false,
@@ -311,6 +109,7 @@ export default function AnimalProfileForm() {
             'Content-Type': 'application/json',
             'x-demo-email': user.email,
             'x-demo-role': user.role,
+            'x-demo-token': localStorage.getItem('pm_token'),
           },
         });
         const result = await response.json();
@@ -326,6 +125,7 @@ export default function AnimalProfileForm() {
           size: animal.size || '',
           weightLbs: '',
           color: '',
+          adoption_fee: animal.adoption_fee || '',
           disposition: {
             goodWithChildren: animal.good_with_children || false,
             goodWithOtherAnimals: animal.good_with_other_animals || false,
@@ -407,6 +207,7 @@ export default function AnimalProfileForm() {
             'Content-Type': 'application/json',
             'x-demo-email': user.email,
             'x-demo-role': user.role,
+            'x-demo-token': localStorage.getItem('pm_token'),
           },
           body: JSON.stringify(payload),
         }
@@ -431,31 +232,13 @@ export default function AnimalProfileForm() {
     <>
       <style>{`
         @media (max-width: 768px) {
-          .animal-form-container {
-            flex-direction: column !important;
-            height: auto !important;
-            min-height: 100vh;
-          }
-          .animal-form-left {
-            width: 100% !important;
-            border-right: none !important;
-            border-bottom: 1px solid #D7C3AE;
-          }
-          .animal-form-right {
-            height: auto !important;
-          }
-          .animal-form-content {
-            padding: 20px !important;
-          }
-          .animal-form-header {
-            padding: 20px !important;
-          }
-          .animal-form-grid {
-            grid-template-columns: 1fr !important;
-          }
-          .animal-photo-grid {
-            grid-template-columns: repeat(2, 1fr) !important;
-          }
+          .animal-form-container { flex-direction: column !important; height: auto !important; min-height: 100vh; }
+          .animal-form-left { width: 100% !important; border-right: none !important; border-bottom: 1px solid #D7C3AE; }
+          .animal-form-right { height: auto !important; }
+          .animal-form-content { padding: 20px !important; }
+          .animal-form-header { padding: 20px !important; }
+          .animal-form-grid { grid-template-columns: 1fr !important; }
+          .animal-photo-grid { grid-template-columns: repeat(2, 1fr) !important; }
         }
       `}</style>
 
@@ -494,9 +277,7 @@ export default function AnimalProfileForm() {
                 <li>Avoid blurry images</li>
               </ul>
             </div>
-            <button onClick={() => navigate('/shelter-listings')} style={styles.backButton}>
-              Back to Listings
-            </button>
+            <button onClick={() => navigate('/shelter-listings')} style={styles.backButton}>Back to Listings</button>
           </div>
         </aside>
 
@@ -508,15 +289,7 @@ export default function AnimalProfileForm() {
 
           <div style={styles.formContent} className="animal-form-content">
             {submitStatus && (
-              <div
-                role="alert"
-                style={{
-                  ...styles.statusMessage,
-                  backgroundColor: submitStatus.type === 'success' ? '#d1fae5' : '#fee2e2',
-                  borderColor: submitStatus.type === 'success' ? '#059669' : '#dc2626',
-                  color: submitStatus.type === 'success' ? '#065f46' : '#991b1b',
-                }}
-              >
+              <div role="alert" style={{ ...styles.statusMessage, backgroundColor: submitStatus.type === 'success' ? '#d1fae5' : '#fee2e2', borderColor: submitStatus.type === 'success' ? '#059669' : '#dc2626', color: submitStatus.type === 'success' ? '#065f46' : '#991b1b' }}>
                 {submitStatus.message}
               </div>
             )}
@@ -528,24 +301,12 @@ export default function AnimalProfileForm() {
             <div style={styles.gridTwo} className="animal-form-grid">
               <div style={styles.section}>
                 <label htmlFor="animalName" style={styles.label}>Animal Name *</label>
-                <input
-                  id="animalName"
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g., Buddy"
-                  style={styles.input}
-                />
+                <input id="animalName" type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="e.g., Buddy" style={styles.input} />
                 {errors.name && <p style={styles.errorText} role="alert">{errors.name}</p>}
               </div>
               <div style={styles.section}>
                 <label htmlFor="animalType" style={styles.label}>Animal Type *</label>
-                <select
-                  id="animalType"
-                  value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                  style={styles.select}
-                >
+                <select id="animalType" value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })} style={styles.select}>
                   <option value="">Select type</option>
                   <option value="dog">Dog</option>
                   <option value="cat">Cat</option>
@@ -558,23 +319,11 @@ export default function AnimalProfileForm() {
             <div style={styles.gridTwo} className="animal-form-grid">
               <div style={styles.section}>
                 <label htmlFor="animalBreed" style={styles.label}>Breed</label>
-                <input
-                  id="animalBreed"
-                  type="text"
-                  value={formData.breed}
-                  onChange={(e) => setFormData({ ...formData, breed: e.target.value })}
-                  placeholder="e.g., Golden Retriever"
-                  style={styles.input}
-                />
+                <input id="animalBreed" type="text" value={formData.breed} onChange={(e) => setFormData({ ...formData, breed: e.target.value })} placeholder="e.g., Golden Retriever" style={styles.input} />
               </div>
               <div style={styles.section}>
                 <label htmlFor="animalSex" style={styles.label}>Sex *</label>
-                <select
-                  id="animalSex"
-                  value={formData.sex}
-                  onChange={(e) => setFormData({ ...formData, sex: e.target.value })}
-                  style={styles.select}
-                >
+                <select id="animalSex" value={formData.sex} onChange={(e) => setFormData({ ...formData, sex: e.target.value })} style={styles.select}>
                   <option value="">Select sex</option>
                   <option value="male">Male</option>
                   <option value="female">Female</option>
@@ -587,29 +336,11 @@ export default function AnimalProfileForm() {
             <div style={styles.gridTwo} className="animal-form-grid">
               <div style={styles.section}>
                 <label htmlFor="ageYears" style={styles.label}>Age (Years) *</label>
-                <input
-                  id="ageYears"
-                  type="number"
-                  min="0"
-                  max="30"
-                  value={formData.ageYears}
-                  onChange={(e) => setFormData({ ...formData, ageYears: e.target.value })}
-                  placeholder="0-30"
-                  style={styles.input}
-                />
+                <input id="ageYears" type="number" min="0" max="30" value={formData.ageYears} onChange={(e) => setFormData({ ...formData, ageYears: e.target.value })} placeholder="0-30" style={styles.input} />
               </div>
               <div style={styles.section}>
                 <label htmlFor="ageMonths" style={styles.label}>Age (Additional Months)</label>
-                <input
-                  id="ageMonths"
-                  type="number"
-                  min="0"
-                  max="11"
-                  value={formData.ageMonths}
-                  onChange={(e) => setFormData({ ...formData, ageMonths: e.target.value })}
-                  placeholder="0-11"
-                  style={styles.input}
-                />
+                <input id="ageMonths" type="number" min="0" max="11" value={formData.ageMonths} onChange={(e) => setFormData({ ...formData, ageMonths: e.target.value })} placeholder="0-11" style={styles.input} />
               </div>
             </div>
             {errors.age && <p style={styles.errorText} role="alert">{errors.age}</p>}
@@ -617,12 +348,7 @@ export default function AnimalProfileForm() {
             <div style={styles.gridTwo} className="animal-form-grid">
               <div style={styles.section}>
                 <label htmlFor="animalSize" style={styles.label}>Size</label>
-                <select
-                  id="animalSize"
-                  value={formData.size}
-                  onChange={(e) => setFormData({ ...formData, size: e.target.value })}
-                  style={styles.select}
-                >
+                <select id="animalSize" value={formData.size} onChange={(e) => setFormData({ ...formData, size: e.target.value })} style={styles.select}>
                   <option value="">Select size</option>
                   <option value="small">Small (under 25 lbs)</option>
                   <option value="medium">Medium (25-50 lbs)</option>
@@ -633,28 +359,19 @@ export default function AnimalProfileForm() {
               </div>
               <div style={styles.section}>
                 <label htmlFor="animalWeight" style={styles.label}>Weight (lbs)</label>
-                <input
-                  id="animalWeight"
-                  type="number"
-                  min="0"
-                  value={formData.weightLbs}
-                  onChange={(e) => setFormData({ ...formData, weightLbs: e.target.value })}
-                  placeholder="Weight in pounds"
-                  style={styles.input}
-                />
+                <input id="animalWeight" type="number" min="0" value={formData.weightLbs} onChange={(e) => setFormData({ ...formData, weightLbs: e.target.value })} placeholder="Weight in pounds" style={styles.input} />
               </div>
             </div>
 
-            <div style={styles.section}>
-              <label htmlFor="animalColor" style={styles.label}>Color/Markings</label>
-              <input
-                id="animalColor"
-                type="text"
-                value={formData.color}
-                onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                placeholder="e.g., Brown with white patches"
-                style={styles.input}
-              />
+            <div style={styles.gridTwo} className="animal-form-grid">
+              <div style={styles.section}>
+                <label htmlFor="animalColor" style={styles.label}>Color/Markings</label>
+                <input id="animalColor" type="text" value={formData.color} onChange={(e) => setFormData({ ...formData, color: e.target.value })} placeholder="e.g., Brown with white patches" style={styles.input} />
+              </div>
+              <div style={styles.section}>
+                <label htmlFor="adoptionFee" style={styles.label}>Adoption Fee</label>
+                <input id="adoptionFee" type="number" min="0" value={formData.adoption_fee} onChange={(e) => setFormData({ ...formData, adoption_fee: e.target.value })} placeholder="e.g., 25" style={styles.input} />
+              </div>
             </div>
 
             <div style={styles.sectionHeader}>
@@ -711,14 +428,7 @@ export default function AnimalProfileForm() {
             <div style={styles.section}>
               <label htmlFor="animalDescription" style={styles.label}>About This Animal</label>
               <p style={styles.helpText}>Describe personality, energy level, favorite activities (minimum 50 characters)</p>
-              <textarea
-                id="animalDescription"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows="6"
-                placeholder="Tell potential adopters about this animal's personality, habits, and what makes them special..."
-                style={styles.textarea}
-              />
+              <textarea id="animalDescription" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows="6" placeholder="Tell potential adopters about this animal's personality, habits, and what makes them special..." style={styles.textarea} />
               <p style={styles.charCount} aria-live="polite">{formData.description.length}/2000 characters</p>
               {errors.description && <p style={styles.errorText} role="alert">{errors.description}</p>}
             </div>
@@ -726,24 +436,12 @@ export default function AnimalProfileForm() {
             <div style={styles.section}>
               <label htmlFor="medicalNotes" style={styles.label}>Medical Notes (Optional)</label>
               <p style={styles.helpText}>Any medical conditions, medications, or special care requirements</p>
-              <textarea
-                id="medicalNotes"
-                value={formData.medicalNotes}
-                onChange={(e) => setFormData({ ...formData, medicalNotes: e.target.value })}
-                rows="3"
-                placeholder="e.g., Takes medication for arthritis, needs special diet..."
-                style={styles.textarea}
-              />
+              <textarea id="medicalNotes" value={formData.medicalNotes} onChange={(e) => setFormData({ ...formData, medicalNotes: e.target.value })} rows="3" placeholder="e.g., Takes medication for arthritis, needs special diet..." style={styles.textarea} />
             </div>
 
             <div style={styles.section}>
               <label htmlFor="availability" style={styles.label}>Availability Status</label>
-              <select
-                id="availability"
-                value={formData.availability}
-                onChange={(e) => setFormData({ ...formData, availability: e.target.value })}
-                style={styles.select}
-              >
+              <select id="availability" value={formData.availability} onChange={(e) => setFormData({ ...formData, availability: e.target.value })} style={styles.select}>
                 <option value="available">Available for Adoption</option>
                 <option value="pending">Adoption Pending</option>
                 <option value="adopted">Adopted</option>
@@ -752,19 +450,10 @@ export default function AnimalProfileForm() {
             </div>
 
             <div style={styles.buttonContainer}>
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={loading}
-                style={{ ...styles.submitButton, opacity: loading ? 0.5 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
-              >
-                {loading
-                  ? (isEditMode ? 'Saving Changes...' : 'Creating Profile...')
-                  : (isEditMode ? 'Save Changes' : 'Create Animal Profile')}
+              <button type="button" onClick={handleSubmit} disabled={loading} style={{ ...styles.submitButton, opacity: loading ? 0.5 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}>
+                {loading ? (isEditMode ? 'Saving Changes...' : 'Creating Profile...') : (isEditMode ? 'Save Changes' : 'Create Animal Profile')}
               </button>
-              <button type="button" onClick={() => navigate('/shelter-listings')} style={styles.cancelButton}>
-                Cancel
-              </button>
+              <button type="button" onClick={() => navigate('/shelter-listings')} style={styles.cancelButton}>Cancel</button>
             </div>
           </div>
         </main>

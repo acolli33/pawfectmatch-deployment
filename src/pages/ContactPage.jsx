@@ -3,7 +3,7 @@
  
 import { useAuth } from '../auth/AuthContext.jsx';
 import React, { useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -11,6 +11,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 export default function ContactPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
 
   const [threads, setThreads] = useState(null);
   const [activeChatId, setActiveChatId] = useState(null);
@@ -45,6 +46,7 @@ export default function ContactPage() {
     "Content-Type": "application/json",
     "x-demo-email": user?.email,
     "x-demo-role": user?.role,
+    "x-demo-token": localStorage.getItem("pm_token"),
   });
 
   const loadThreads = async (showLoading = false) => {
@@ -64,6 +66,18 @@ export default function ContactPage() {
       if (showLoading) setLoadingThreads(false);
     }
   };
+
+  useEffect(() => {
+    const threadId = searchParams.get("threadId");
+    if (!threadId) return;
+    if (!Array.isArray(threads)) return;
+    const matchingThread = threads.find(
+      (thread) => String(thread.id) === String(threadId)
+    );
+    if (matchingThread) {
+      setActiveChatId(matchingThread.id);
+    }
+  }, [searchParams, threads]);
 
   const markThreadRead = async (threadId) => {
     if (!threadId || !user) return;
@@ -128,7 +142,14 @@ export default function ContactPage() {
         setLoadingMessages(true);
         const res = await fetch(
           `${API_BASE_URL}/api/messages/threads/${activeChatId}?_=${Date.now()}`,
-          { headers: { "x-demo-email": user.email, "x-demo-role": user.role }, cache: "no-store" }
+          {
+            headers: {
+              "x-demo-email": user.email,
+              "x-demo-role": user.role,
+              "x-demo-token": localStorage.getItem("pm_token"),
+            },
+            cache: "no-store",
+          }
         );
         const result = await res.json();
         setMessages(Array.isArray(result.data) ? result.data : []);
@@ -185,7 +206,14 @@ export default function ContactPage() {
           if (String(newMessage.thread_id) === String(activeChatId)) {
             const res = await fetch(
               `${API_BASE_URL}/api/messages/threads/${activeChatIdRef.current}?_=${Date.now()}`,
-              { headers: { "x-demo-email": user.email, "x-demo-role": user.role }, cache: "no-store" }
+              {
+                headers: {
+                  "x-demo-email": user.email,
+                  "x-demo-role": user.role,
+                  "x-demo-token": localStorage.getItem("pm_token"),
+                },
+                cache: "no-store",
+              }
             );
             const result = await res.json();
             setMessages(Array.isArray(result.data) ? result.data : []);
@@ -267,203 +295,38 @@ export default function ContactPage() {
   };
 
   const styles = {
-    container: {
-      display: "flex",
-      height: "100vh",
-      width: "100vw",
-      fontFamily: "Arial, sans-serif",
-      backgroundColor: "#FFF7ED",
-      color: "#2C2C34",
-    },
-    leftPane: {
-      width: "320px",
-      borderRight: "1px solid #D7C3AE",
-      backgroundColor: "#FFF7ED",
-      display: "flex",
-      flexDirection: "column",
-      color: "#2C2C34",
-      height: "100vh",
-    },
-    rightPane: {
-      flex: 1,
-      display: "flex",
-      flexDirection: "column",
-      backgroundColor: "#FFF7ED",
-    },
-    backButton: {
-      padding: "14px 16px",
-      border: "none",
-      backgroundColor: "#2F3A56",
-      color: "#FFF7ED",
-      cursor: "pointer",
-      fontWeight: "600",
-      textAlign: "left",
-      borderBottom: "1px solid rgba(255,255,255,0.15)",
-      marginBottom: "12px",
-      transition: "all 0.2s ease-in-out",
-      fontFamily: "Arial, sans-serif",
-    },
-    chatHeader: {
-      padding: "18px 24px",
-      borderBottom: "1px solid #D7C3AE",
-      backgroundColor: "#FFF7ED",
-      color: "#2F3A56",
-      fontSize: "20px",
-      letterSpacing: "0.5px",
-    },
-    chatBox: {
-      flex: 1,
-      padding: "24px",
-      overflowY: "auto",
-      backgroundColor: "#FFF7ED",
-    },
-    message: {
-      maxWidth: "65%",
-      padding: "12px 16px",
-      borderRadius: "16px",
-      wordBreak: "break-word",
-      boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
-      lineHeight: "1.4",
-      fontSize: "15px",
-    },
-    inputContainer: {
-      padding: "18px 20px",
-      borderTop: "1px solid #D7C3AE",
-      backgroundColor: "#FFF7ED",
-      display: "flex",
-      gap: "12px",
-      alignItems: "flex-end",
-    },
-    textarea: {
-      flex: 1,
-      padding: "12px 14px",
-      borderRadius: "10px",
-      border: "1px solid #D7C3AE",
-      resize: "none",
-      fontFamily: "Arial, sans-serif",
-      fontSize: "15px",
-      outline: "none",
-      backgroundColor: "#FFF7ED",
-      color: "#2C2C34",
-    },
-    button: {
-      padding: "10px 24px",
-      backgroundColor: "#2F3A56",
-      color: "#FFF7ED",
-      border: "none",
-      borderRadius: "8px",
-      cursor: "pointer",
-      fontSize: "15px",
-      fontWeight: "600",
-      transition: "all 0.2s ease-in-out",
-      fontFamily: "Arial, sans-serif",
-    },
-    threadSection: {
-      flex: 1,
-      overflowY: "auto",
-      display: "flex",
-      flexDirection: "column",
-    },
+    container: { display: "flex", height: "100vh", width: "100vw", fontFamily: "Arial, sans-serif", backgroundColor: "#FFF7ED", color: "#2C2C34" },
+    leftPane: { width: "320px", borderRight: "1px solid #D7C3AE", backgroundColor: "#FFF7ED", display: "flex", flexDirection: "column", color: "#2C2C34", height: "100vh" },
+    rightPane: { flex: 1, display: "flex", flexDirection: "column", backgroundColor: "#FFF7ED" },
+    backButton: { padding: "14px 16px", border: "none", backgroundColor: "#2F3A56", color: "#FFF7ED", cursor: "pointer", fontWeight: "600", textAlign: "left", borderBottom: "1px solid rgba(255,255,255,0.15)", marginBottom: "12px", transition: "all 0.2s ease-in-out", fontFamily: "Arial, sans-serif" },
+    chatHeader: { padding: "18px 24px", borderBottom: "1px solid #D7C3AE", backgroundColor: "#FFF7ED", color: "#2F3A56", fontSize: "20px", letterSpacing: "0.5px" },
+    chatBox: { flex: 1, padding: "24px", overflowY: "auto", backgroundColor: "#FFF7ED" },
+    message: { maxWidth: "65%", padding: "12px 16px", borderRadius: "16px", wordBreak: "break-word", boxShadow: "0 2px 6px rgba(0,0,0,0.08)", lineHeight: "1.4", fontSize: "15px" },
+    inputContainer: { padding: "18px 20px", borderTop: "1px solid #D7C3AE", backgroundColor: "#FFF7ED", display: "flex", gap: "12px", alignItems: "flex-end" },
+    textarea: { flex: 1, padding: "12px 14px", borderRadius: "10px", border: "1px solid #D7C3AE", resize: "none", fontFamily: "Arial, sans-serif", fontSize: "15px", outline: "none", backgroundColor: "#FFF7ED", color: "#2C2C34" },
+    button: { padding: "10px 24px", backgroundColor: "#2F3A56", color: "#FFF7ED", border: "none", borderRadius: "8px", cursor: "pointer", fontSize: "15px", fontWeight: "600", transition: "all 0.2s ease-in-out", fontFamily: "Arial, sans-serif" },
+    threadSection: { flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" },
     threadList: { flex: 1, overflowY: "auto" },
-    newConversationContainer: {
-      padding: "16px",
-      borderTop: "1px solid #D7C3AE",
-      backgroundColor: "#FFF7ED",
-      position: "sticky",
-      bottom: 0,
-    },
-    newConversationButton: {
-      width: "100%",
-      padding: "14px",
-      backgroundColor: "#B46D92",
-      color: "#FFF7ED",
-      border: "none",
-      borderRadius: "10px",
-      cursor: "pointer",
-      fontWeight: "600",
-      fontSize: "15px",
-    },
-    animalCard: {
-      display: "flex",
-      alignItems: "center",
-      gap: "12px",
-      padding: "14px 20px",
-      cursor: "pointer",
-      borderBottom: "1px solid #D7C3AE",
-      transition: "background-color 0.2s ease",
-    },
-    animalImage: {
-      width: "48px",
-      height: "48px",
-      borderRadius: "10px",
-      objectFit: "cover",
-      flexShrink: 0,
-    },
-    closeButton: {
-      width: "100%",
-      padding: "12px",
-      borderRadius: "10px",
-      border: "none",
-      backgroundColor: "#2F3A56",
-      color: "#FFF7ED",
-      fontWeight: "600",
-      cursor: "pointer",
-    },
-    modalOverlay: {
-      position: "fixed",
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%",
-      display: "flex",
-      backgroundColor: "rgba(0,0,0,0.15)",
-      justifyContent: "flex-end",
-      alignItems: "stretch",
-      zIndex: 1000,
-    },
-    modal: {
-      width: "360px",
-      height: "100%",
-      backgroundColor: "#FFF7ED",
-      borderLeft: "1px solid #D7C3AE",
-      display: "flex",
-      flexDirection: "column",
-    },
-    modalHeader: {
-      padding: "20px 24px",
-      borderBottom: "1px solid #D7C3AE",
-      backgroundColor: "#FFF7ED",
-      flexShrink: 0,
-    },
+    newConversationContainer: { padding: "16px", borderTop: "1px solid #D7C3AE", backgroundColor: "#FFF7ED", position: "sticky", bottom: 0 },
+    newConversationButton: { width: "100%", padding: "14px", backgroundColor: "#B46D92", color: "#FFF7ED", border: "none", borderRadius: "10px", cursor: "pointer", fontWeight: "600", fontSize: "15px" },
+    animalCard: { display: "flex", alignItems: "center", gap: "12px", padding: "14px 20px", cursor: "pointer", borderBottom: "1px solid #D7C3AE", transition: "background-color 0.2s ease" },
+    animalImage: { width: "48px", height: "48px", borderRadius: "10px", objectFit: "cover", flexShrink: 0 },
+    closeButton: { width: "100%", padding: "12px", borderRadius: "10px", border: "none", backgroundColor: "#2F3A56", color: "#FFF7ED", fontWeight: "600", cursor: "pointer" },
+    modalOverlay: { position: "fixed", top: 0, left: 0, width: "100%", height: "100%", display: "flex", backgroundColor: "rgba(0,0,0,0.15)", justifyContent: "flex-end", alignItems: "stretch", zIndex: 1000 },
+    modal: { width: "360px", height: "100%", backgroundColor: "#FFF7ED", borderLeft: "1px solid #D7C3AE", display: "flex", flexDirection: "column" },
+    modalHeader: { padding: "20px 24px", borderBottom: "1px solid #D7C3AE", backgroundColor: "#FFF7ED", flexShrink: 0 },
     modalTitle: { margin: 0, fontSize: "20px", color: "#2F3A56" },
     modalList: { flex: 1, overflowY: "auto", backgroundColor: "#FFF7ED" },
-    modalFooter: {
-      padding: "16px 24px",
-      borderTop: "1px solid #D7C3AE",
-      backgroundColor: "#FFF7ED",
-      flexShrink: 0,
-    },
+    modalFooter: { padding: "16px 24px", borderTop: "1px solid #D7C3AE", backgroundColor: "#FFF7ED", flexShrink: 0 },
   };
 
   return (
     <>
       <style>{`
         @media (max-width: 768px) {
-          .contact-container {
-            flex-direction: column !important;
-            height: auto !important;
-            min-height: 100vh;
-          }
-          .contact-left-pane {
-            width: 100% !important;
-            height: auto !important;
-            border-right: none !important;
-            border-bottom: 1px solid #D7C3AE;
-            max-height: 300px;
-          }
-          .contact-right-pane {
-            height: calc(100vh - 300px) !important;
-          }
+          .contact-container { flex-direction: column !important; height: auto !important; min-height: 100vh; }
+          .contact-left-pane { width: 100% !important; height: auto !important; border-right: none !important; border-bottom: 1px solid #D7C3AE; max-height: 300px; }
+          .contact-right-pane { height: calc(100vh - 300px) !important; }
         }
       `}</style>
 
@@ -473,10 +336,7 @@ export default function ContactPage() {
           <h1 style={{ fontSize: '16px', padding: '14px 16px', margin: 0 }}>Messages</h1>
 
           <div style={styles.threadSection}>
-            <button
-              onClick={() => navigate(user?.role === "adopter" ? "/adopter-menu" : "/shelter-menu")}
-              style={styles.backButton}
-            >
+            <button onClick={() => navigate(user?.role === "adopter" ? "/adopter-menu" : "/shelter-menu")} style={styles.backButton}>
               ← Back to Main Menu
             </button>
 
@@ -506,37 +366,16 @@ export default function ContactPage() {
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <img
-                      src={thread.primary_photo_url}
-                      alt={thread.animal_name}
-                      style={{ width: "40px", height: "40px", borderRadius: "8px", objectFit: "cover" }}
-                    />
+                    <img src={thread.primary_photo_url} alt={thread.animal_name} style={{ width: "40px", height: "40px", borderRadius: "8px", objectFit: "cover" }} />
                     <div style={{ color: "#2C2C34", fontWeight: "500" }}>
                       {thread.animal_name || "Unknown Animal"}
                       {thread.other_party_name && (
-                        <span style={{ fontWeight: "400", fontSize: "13px" }}>
-                          {" "}({thread.other_party_name})
-                        </span>
+                        <span style={{ fontWeight: "400", fontSize: "13px" }}>{" "}({thread.other_party_name})</span>
                       )}
                     </div>
                   </div>
-
                   {Number(thread.unread_count || 0) > 0 && (
-                    <div
-                      aria-hidden="true"
-                      style={{
-                        backgroundColor: "#B46D92",
-                        minWidth: "18px",
-                        height: "18px",
-                        padding: "0 6px",
-                        borderRadius: "999px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "#fff",
-                        fontSize: "11px",
-                      }}
-                    >
+                    <div aria-hidden="true" style={{ backgroundColor: "#B46D92", minWidth: "18px", height: "18px", padding: "0 6px", borderRadius: "999px", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "11px" }}>
                       {Number(thread.unread_count || 0) > 99 ? "99+" : Number(thread.unread_count || 0)}
                     </div>
                   )}
@@ -547,9 +386,7 @@ export default function ContactPage() {
 
           {user?.role === "adopter" && (
             <div style={styles.newConversationContainer}>
-              <button style={styles.newConversationButton} onClick={loadAvailableAnimals}>
-                + New Conversation
-              </button>
+              <button style={styles.newConversationButton} onClick={loadAvailableAnimals}>+ New Conversation</button>
             </div>
           )}
         </nav>
@@ -559,44 +396,24 @@ export default function ContactPage() {
             <h2 style={{ margin: 0, fontSize: "20px" }}>Chat</h2>
           </header>
 
-          <div
-            ref={chatBoxRef}
-            style={styles.chatBox}
-            role="log"
-            aria-live="polite"
-            aria-label="Message history"
-            onScroll={handleChatScroll}
-          >
+          <div ref={chatBoxRef} style={styles.chatBox} role="log" aria-live="polite" aria-label="Message history" onScroll={handleChatScroll}>
             {loadingThreads || threads === null ? (
-              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%", color: "#595959", fontSize: "16px" }}>
-                Loading conversations...
-              </div>
+              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%", color: "#595959", fontSize: "16px" }}>Loading conversations...</div>
             ) : user?.role === "shelter" && threads.length === 0 ? (
-              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%", color: "#595959", fontSize: "16px" }}>
-                No conversation history with adopters.
-              </div>
+              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%", color: "#595959", fontSize: "16px" }}>No conversation history with adopters.</div>
             ) : !activeChatId ? (
-              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%", color: "#595959", fontSize: "16px" }}>
-                Please select a conversation <br /> from the thread list on the left.
-              </div>
+              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%", color: "#595959", fontSize: "16px" }}>Please select a conversation <br /> from the thread list on the left.</div>
             ) : loadingMessages ? (
-              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%", color: "#595959", fontSize: "16px" }}>
-                Loading messages...
-              </div>
+              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%", color: "#595959", fontSize: "16px" }}>Loading messages...</div>
             ) : messages.length === 0 ? (
-              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column", height: "100%", color: "#595959", fontSize: "16px", textAlign: "center", lineHeight: "1.6" }}>
-                No messages yet. <br /> Start the conversation by sending a message.
-              </div>
+              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column", height: "100%", color: "#595959", fontSize: "16px", textAlign: "center", lineHeight: "1.6" }}>No messages yet. <br /> Start the conversation by sending a message.</div>
             ) : (
               messages.map((msg, idx) => {
                 const activeThread = threads.find(t => String(t.id) === String(activeChatId));
                 const myId = user?.role === "adopter" ? activeThread?.adopter_id : activeThread?.shelter_user_id;
                 const isMine = String(msg.sender_id) === String(myId);
                 return (
-                  <div
-                    key={msg.id || idx}
-                    style={{ display: "flex", justifyContent: isMine ? "flex-end" : "flex-start", marginBottom: "10px" }}
-                  >
+                  <div key={msg.id || idx} style={{ display: "flex", justifyContent: isMine ? "flex-end" : "flex-start", marginBottom: "10px" }}>
                     <div style={{ ...styles.message, backgroundColor: isMine ? "#2F3A56" : "#D7C3AE", color: isMine ? "#FFF7ED" : "#2C2C34" }}>
                       <div>{msg.content}</div>
                       <div style={{ fontSize: "11px", marginTop: "4px", opacity: 1, color: isMine ? "#ffffff" : "#1f2937" }}>
@@ -617,19 +434,8 @@ export default function ContactPage() {
           {activeChatId && (
             <div style={styles.inputContainer}>
               <label htmlFor="messageInput" style={{ display: "none" }}>Message</label>
-              <textarea
-                id="messageInput"
-                aria-label="Type a message"
-                style={styles.textarea}
-                rows={2}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSend();
-                  }
-                }}
+              <textarea id="messageInput" aria-label="Type a message" style={styles.textarea} rows={2} value={message} onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
               />
               <button style={styles.button} onClick={handleSend}>Send</button>
             </div>
@@ -647,9 +453,7 @@ export default function ContactPage() {
                   <div style={{ padding: "20px" }}>No available animals.</div>
                 ) : (
                   availableAnimals.map(animal => (
-                    <button
-                      key={animal.id}
-                      onClick={() => handleCreateThread(animal.id)}
+                    <button key={animal.id} onClick={() => handleCreateThread(animal.id)}
                       style={{ ...styles.animalCard, width: "100%", border: "none", borderBottom: "1px solid #D7C3AE", backgroundColor: "transparent", fontFamily: "Arial, sans-serif" }}
                       onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#F3E8DC"; }}
                       onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}

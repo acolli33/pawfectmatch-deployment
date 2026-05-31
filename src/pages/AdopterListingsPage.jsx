@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext.jsx';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -82,6 +82,7 @@ export default function AdopterListingsPage() {
           'Content-Type': 'application/json',
           'x-demo-email': user.email,
           'x-demo-role': user.role,
+          'x-demo-token': localStorage.getItem('pm_token'),
         };
 
         const [animalsResponse, preferencesResponse, matchesResponse] = await Promise.all([
@@ -129,8 +130,11 @@ export default function AdopterListingsPage() {
           if (matchedAnimalIds.includes(animalId)) return false;
           if (availability && availability !== 'available') return false;
 
-          if (preferredTypes.length > 0 && !preferredTypes.includes(animalType)) {
-            return false;
+          if (preferredTypes.length > 0) {
+            const isDogOrCat = animalType === 'dog' || animalType === 'cat';
+            const isExactMatch = preferredTypes.includes(animalType);
+            const isOtherMatch = preferredTypes.includes('other') && !isDogOrCat;
+            if (!isExactMatch && !isOtherMatch) return false;
           }
 
           if (preferredSizes.length > 0 && !preferredSizes.includes(animalSize)) {
