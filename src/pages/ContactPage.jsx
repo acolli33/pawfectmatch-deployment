@@ -21,11 +21,44 @@ export default function ContactPage() {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [availableAnimals, setAvailableAnimals] = useState([]);
+<<<<<<< HEAD
+  const [sending, setSending] = useState(false);
+ 
+=======
 
+>>>>>>> origin/master
   const activeChatIdRef = useRef(null);
   const threadsRef = useRef([]);
   const userRef = useRef(null);
   const chatBoxRef = useRef(null);
+<<<<<<< HEAD
+  const isAtBottomRef = useRef(true);
+ 
+  useEffect(() => {
+    activeChatIdRef.current = activeChatId;
+  }, [activeChatId]);
+ 
+  useEffect(() => {
+    threadsRef.current = Array.isArray(threads) ? threads : [];
+  }, [threads]);
+ 
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
+ 
+  useEffect(() => {
+    if (!activeChatId) return;
+    if (loadingMessages) return;
+    if (!chatBoxRef.current) return;
+
+    requestAnimationFrame(() => {
+      chatBoxRef.current.scrollTop =
+        chatBoxRef.current.scrollHeight;
+
+      isAtBottomRef.current = true;
+    });
+    }, [activeChatId, loadingMessages]);
+=======
 
   useEffect(() => { activeChatIdRef.current = activeChatId; }, [activeChatId]);
   useEffect(() => { threadsRef.current = Array.isArray(threads) ? threads : []; }, [threads]);
@@ -41,6 +74,7 @@ export default function ContactPage() {
       chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
     });
   }, [activeChatId, loadingMessages, messages.length]);
+>>>>>>> origin/master
 
   const getHeaders = () => ({
     "Content-Type": "application/json",
@@ -111,18 +145,41 @@ export default function ContactPage() {
       const updated = currentThreads.map(t => {
         if (String(t.id) !== String(newMessage.thread_id)) return t;
         const currentUserId = getCurrentUserIdForThread(t);
+<<<<<<< HEAD
+        const isMine =
+          currentUserId &&
+          String(newMessage.sender_id) === String(currentUserId);
+ 
+        const isActiveThread =
+          String(t.id) === String(currentActiveChatId);
+
+          const shouldCountUnread =
+            !isMine &&
+            (
+              !isActiveThread ||
+              !isAtBottomRef.current
+            );
+
+=======
         const isMine = currentUserId && String(newMessage.sender_id) === String(currentUserId);
         const isActiveThread = String(t.id) === String(currentActiveChatId);
+>>>>>>> origin/master
         return {
           ...t,
           last_message: newMessage.content,
           last_message_time: newMessage.created_at,
+<<<<<<< HEAD
+          unread_count: shouldCountUnread
+            ? Number(t.unread_count || 0) + 1
+            : Number(t.unread_count || 0)
+=======
           unread_count:
             !isMine && !isActiveThread
               ? Number(t.unread_count || 0) + 1
               : isActiveThread
               ? 0
               : Number(t.unread_count || 0),
+>>>>>>> origin/master
         };
       });
       return [...updated].sort(
@@ -153,20 +210,65 @@ export default function ContactPage() {
         );
         const result = await res.json();
         setMessages(Array.isArray(result.data) ? result.data : []);
+<<<<<<< HEAD
+        await markThreadRead(activeChatId);
+       } finally {
+=======
       } finally {
+>>>>>>> origin/master
         setLoadingMessages(false);
       }
     };
     loadMessages();
   }, [activeChatId, user]);
 
+<<<<<<< HEAD
+ 
+=======
   useEffect(() => {
     if (!activeChatId || !user || loadingMessages) return;
     markThreadRead(activeChatId);
   }, [activeChatId, loadingMessages, user]);
 
+>>>>>>> origin/master
   const handleSend = async () => {
+    if (sending) return;
     if (!message.trim() || !activeChatId || !user) return;
+<<<<<<< HEAD
+
+    setSending(true);
+    
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/api/messages/threads/${activeChatId}/messages`,
+        {
+          method: "POST",
+          headers: getHeaders(),
+          body: JSON.stringify({ content: message }),
+        }
+      );
+    
+      const result = await res.json();
+      const newMessage = result.data;
+   
+      setMessage("");
+ 
+      setMessages(prev => {
+        const currentMessages = Array.isArray(prev) ? prev : [];
+        const exists = currentMessages.some(m => String(m.id) === String(newMessage.id));
+ 
+        if (exists) {
+          return currentMessages;
+        }
+ 
+        return [...currentMessages, newMessage];
+      });
+ 
+      updateThreadForNewMessage(newMessage);
+    } finally {
+      setSending(false);
+    }
+=======
     const res = await fetch(
       `${API_BASE_URL}/api/messages/threads/${activeChatId}/messages`,
       { method: "POST", headers: getHeaders(), body: JSON.stringify({ content: message }) }
@@ -181,6 +283,7 @@ export default function ContactPage() {
       return [...currentMessages, newMessage];
     });
     updateThreadForNewMessage(newMessage);
+>>>>>>> origin/master
   };
 
   useEffect(() => {
@@ -228,16 +331,77 @@ export default function ContactPage() {
             prev.map(m => String(m.id) === String(updatedMessage.id) ? updatedMessage : m)
           );
         }
+<<<<<<< HEAD
+ 
+        if (String(newMessage.thread_id) === String(activeChatId) && !isMine) {
+          const wasAtBottom = isAtBottomRef.current;
+          if (wasAtBottom) {
+            await markThreadRead(activeChatIdRef.current);
+          
+            requestAnimationFrame(() => {
+              chatBoxRef.current.scrollTop =
+                chatBoxRef.current.scrollHeight;
+            });
+          }
+          const res = await fetch(
+            `${API_BASE_URL}/api/messages/threads/${activeChatIdRef.current}?_=${Date.now()}`,
+            {
+              headers: {
+                "x-demo-email": user.email,
+                "x-demo-role": user.role,
+                "x-demo-token": localStorage.getItem("pm_token"),
+              },
+              cache: "no-store",
+            }
+          );
+          const result = await res.json();
+          setMessages(Array.isArray(result.data) ? result.data : []);
+        }
+ 
+        updateThreadForNewMessage(newMessage);
+      }
+    )
+ 
+    .on(
+      "postgres_changes",
+      {
+        event: "UPDATE",
+        schema: "public",
+        table: "messages",
+      },
+      (payload) => {
+        const updatedMessage = payload.new;
+ 
+        setMessages(prev =>
+          prev.map(m =>
+            String(m.id) === String(updatedMessage.id)
+            ? updatedMessage
+            : m
+          )
+        );
+      }
+    )
+    .subscribe();
+ 
+    return () => {
+      supabase.removeChannel(channel);
+    };
+=======
       )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
+>>>>>>> origin/master
   }, [user]);
 
   useEffect(() => {
     if (!user) return;
     const interval = setInterval(() => {
       const currentActiveChatId = activeChatIdRef.current;
+<<<<<<< HEAD
+  
+=======
       loadThreads(false);
+>>>>>>> origin/master
       if (currentActiveChatId) {
         fetch(
           `${API_BASE_URL}/api/messages/threads/${currentActiveChatId}?_=${Date.now()}`,
@@ -290,8 +454,17 @@ export default function ContactPage() {
   };
 
   const handleChatScroll = async () => {
+    const atBottom = isAtBottom();
+    isAtBottomRef.current = atBottom;
     if (!activeChatId) return;
+<<<<<<< HEAD
+  
+    if (atBottom) {
+      await markThreadRead(activeChatId);
+    }
+=======
     if (isAtBottom()) await markThreadRead(activeChatId);
+>>>>>>> origin/master
   };
 
   const styles = {
@@ -437,7 +610,17 @@ export default function ContactPage() {
               <textarea id="messageInput" aria-label="Type a message" style={styles.textarea} rows={2} value={message} onChange={(e) => setMessage(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
               />
+<<<<<<< HEAD
+              <button 
+                style={styles.button} 
+                onClick={handleSend}
+                disabled={sending}
+              >
+                {sending ? "Sending..." : "Send"}
+              </button>
+=======
               <button style={styles.button} onClick={handleSend}>Send</button>
+>>>>>>> origin/master
             </div>
           )}
         </main>
