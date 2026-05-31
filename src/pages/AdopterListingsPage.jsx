@@ -303,197 +303,181 @@ export default function AdopterListingsPage() {
   const currentAnimal = animals[currentIndex];
 
   return (
-    <div style={{ background: '#fafafa', minHeight: '100vh', padding: '40px' }}>
-      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-          <h1>PawfectMatch</h1>
-          <p>Animal Matches</p>
-          <p style={{ color: '#666', marginTop: '10px' }}>
-            Browse available animals that match your adoption preferences
-          </p>
-        </div>
+    <>
+      <style>{`
+        @media (max-width: 768px) {
+          .listings-card {
+            grid-template-columns: 1fr !important;
+          }
+          .listings-image-box {
+            min-height: 240px !important;
+          }
+          .listings-nav-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+          }
+          .listings-nav-buttons button {
+            margin-right: 0 !important;
+          }
+        }
+      `}</style>
 
-        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-          <button onClick={() => navigate('/preferences')} style={{ marginRight: '12px' }}>
-            Update Preferences
-          </button>
+      <div style={{ background: '#fafafa', minHeight: '100vh', padding: '40px' }}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
 
-          <button onClick={() => navigate('/matches')} style={{ marginRight: '12px' }}>
-            View Matches
-          </button>
-
-          <button onClick={() => navigate('/adopter-menu')} style={{ marginRight: '12px' }}>
-            Back to Dashboard
-          </button>
-
-          <button
-            onClick={() => {
-              logout();
-              navigate('/');
-            }}
-          >
-            Log Out
-          </button>
-        </div>
-
-        {preferences && (
-          <div style={styles.filterBox}>
-            <p style={{ marginTop: 0, marginBottom: '10px', fontWeight: '700' }}>
-              Applied Filters
+          <header style={{ textAlign: 'center', marginBottom: '30px' }}>
+            <h1>PawfectMatch</h1>
+            <h2 style={{ fontSize: '16px', fontWeight: 'normal', margin: '5px 0' }}>Animal Matches</h2>
+            <p style={{ color: '#595959', marginTop: '10px' }}>
+              Browse available animals that match your adoption preferences
             </p>
+          </header>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-              <span style={styles.filterPill}>
-                <strong>Type:</strong> {showList(preferences.animal_types)}
-              </span>
-
-              <span style={styles.filterPill}>
-                <strong>Breed:</strong> {showList(preferences.breeds)}
-              </span>
-
-              <span style={styles.filterPill}>
-                <strong>Age:</strong> {showValue(preferences.age_preference)}
-              </span>
-
-              <span style={styles.filterPill}>
-                <strong>Size:</strong> {showList(preferences.size_preferences)}
-              </span>
-
-              <span style={styles.filterPill}>
-                <strong>Max Distance:</strong> {preferences.max_distance || 'Any'} miles
-              </span>
-
-              {preferences.good_with_children && (
-                <span style={styles.filterPill}>Good with children</span>
-              )}
-
-              {preferences.good_with_other_animals && (
-                <span style={styles.filterPill}>Good with other animals</span>
-              )}
+          <main>
+            <div style={{ textAlign: 'center', marginBottom: '30px' }} className="listings-nav-buttons">
+              <button onClick={() => navigate('/preferences')} style={{ marginRight: '12px' }}>
+                Update Preferences
+              </button>
+              <button onClick={() => navigate('/matches')} style={{ marginRight: '12px' }}>
+                View Matches
+              </button>
+              <button onClick={() => navigate('/adopter-menu')} style={{ marginRight: '12px' }}>
+                Back to Dashboard
+              </button>
+              <button onClick={() => { logout(); navigate('/'); }}>
+                Log Out
+              </button>
             </div>
-          </div>
-        )}
 
-        {statusMessage && (
-          <div style={styles.successMessage}>
-            {statusMessage}
-          </div>
-        )}
-
-        {pageError && (
-          <div style={styles.errorMessage}>
-            {pageError}
-          </div>
-        )}
-
-        {loading ? (
-          <p style={{ textAlign: 'center' }}>Loading listings...</p>
-        ) : animals.length === 0 ? (
-          <div style={styles.emptyBox}>
-            <h3 style={{ marginTop: 0 }}>No matching listings yet</h3>
-            <p style={{ color: '#666' }}>
-              Try updating your preferences or check back later.
-            </p>
-          </div>
-        ) : !currentAnimal ? (
-          <div style={styles.emptyBox}>
-            <h3 style={{ marginTop: 0 }}>No more animals to review</h3>
-            <p style={{ color: '#666' }}>
-              You have reviewed all currently matching animals.
-            </p>
-            <button onClick={() => setCurrentIndex(0)}>
-              Start Over
-            </button>
-          </div>
-        ) : (
-          <div>
-            <p style={{ textAlign: 'center', color: '#666', marginBottom: '15px' }}>
-              {currentIndex + 1} of {animals.length}
-            </p>
-
-            <div style={styles.card}>
-              <div style={styles.imageBox}>
-                {currentAnimal.primary_photo_url ? (
-                  <img
-                    src={currentAnimal.primary_photo_url}
-                    alt={currentAnimal.name}
-                    style={styles.image}
-                  />
-                ) : (
-                  <div style={styles.noPhoto}>No Photo</div>
-                )}
-              </div>
-
-              <div style={styles.cardContent}>
-                <h3 style={{ marginTop: 0, marginBottom: '10px' }}>
-                  {currentAnimal.name}
-                </h3>
-
-                <div style={{ marginBottom: '12px' }}>
-                  <span
-                    style={{
-                      ...styles.badge,
-                      ...getAvailabilityBadgeStyle(currentAnimal.availability),
-                    }}
-                  >
-                    {currentAnimal.availability}
-                  </span>
+            {preferences && (
+              <div style={styles.filterBox}>
+                <p style={{ marginTop: 0, marginBottom: '10px', fontWeight: '700' }}>
+                  Applied Filters
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                  <span style={styles.filterPill}><strong>Type:</strong> {showList(preferences.animal_types)}</span>
+                  <span style={styles.filterPill}><strong>Breed:</strong> {showList(preferences.breeds)}</span>
+                  <span style={styles.filterPill}><strong>Age:</strong> {showValue(preferences.age_preference)}</span>
+                  <span style={styles.filterPill}><strong>Size:</strong> {showList(preferences.size_preferences)}</span>
+                  <span style={styles.filterPill}><strong>Max Distance:</strong> {preferences.max_distance || 'Any'} miles</span>
+                  {preferences.good_with_children && <span style={styles.filterPill}>Good with children</span>}
+                  {preferences.good_with_other_animals && <span style={styles.filterPill}>Good with other animals</span>}
                 </div>
+              </div>
+            )}
 
-                <p style={styles.detail}><strong>Type:</strong> {currentAnimal.type}</p>
-                <p style={styles.detail}><strong>Breed:</strong> {currentAnimal.breed || 'N/A'}</p>
-                <p style={styles.detail}><strong>Sex:</strong> {currentAnimal.sex}</p>
-                <p style={styles.detail}><strong>Size:</strong> {currentAnimal.size || 'N/A'}</p>
-                <p style={styles.detail}><strong>Age:</strong> {currentAnimal.age || 'N/A'}</p>
+            {statusMessage && (
+              <div role="status" style={styles.successMessage}>{statusMessage}</div>
+            )}
 
-                <p style={{ marginTop: '14px', color: '#555' }}>
-                  {currentAnimal.description || 'No description provided.'}
+            {pageError && (
+              <div role="alert" style={styles.errorMessage}>{pageError}</div>
+            )}
+
+            {loading ? (
+              <p style={{ textAlign: 'center' }}>Loading listings...</p>
+            ) : animals.length === 0 ? (
+              <div style={styles.emptyBox}>
+                <h2 style={{ marginTop: 0, fontSize: '18px' }}>No matching listings yet</h2>
+                <p style={{ color: '#595959' }}>
+                  Try updating your preferences or check back later.
+                </p>
+              </div>
+            ) : !currentAnimal ? (
+              <div style={styles.emptyBox}>
+                <h2 style={{ marginTop: 0, fontSize: '18px' }}>No more animals to review</h2>
+                <p style={{ color: '#595959' }}>
+                  You have reviewed all currently matching animals.
+                </p>
+                <button onClick={() => setCurrentIndex(0)}>Start Over</button>
+              </div>
+            ) : (
+              <div>
+                <p style={{ textAlign: 'center', color: '#595959', marginBottom: '15px' }}>
+                  {currentIndex + 1} of {animals.length}
                 </p>
 
-                <div style={styles.actions}>
-                  <button
-                    type="button"
-                    onClick={handleSkip}
-                    aria-label="Skip animal"
-                    style={{
-                      ...styles.swipeButton,
-                      backgroundColor: '#eadfd7',
-                      color: '#8a5a3b',
-                    }}
-                  >
-                    ✕
-                  </button>
+                <div style={styles.card} className="listings-card">
+                  <div style={styles.imageBox} className="listings-image-box">
+                    {currentAnimal.primary_photo_url ? (
+                      <img
+                        src={currentAnimal.primary_photo_url}
+                        alt={currentAnimal.name}
+                        style={styles.image}
+                      />
+                    ) : (
+                      <div style={styles.noPhoto}>No Photo</div>
+                    )}
+                  </div>
 
-                  <button
-                    type="button"
-                    onClick={() => handleMessageShelter(currentAnimal)}
-                  >
-                    Message Shelter
-                  </button>
+                  <div style={styles.cardContent}>
+                    <h2 style={{ marginTop: 0, marginBottom: '10px', fontSize: '20px' }}>
+                      {currentAnimal.name}
+                    </h2>
 
-                  <button
-                    type="button"
-                    onClick={() => handleMatch(currentAnimal)}
-                    aria-label="Match with animal"
-                    style={{
-                      ...styles.swipeButton,
-                      backgroundColor: '#dbeadf',
-                      color: '#355e3b',
-                    }}
-                  >
-                    ♥
-                  </button>
+                    <div style={{ marginBottom: '12px' }}>
+                      <span style={{
+                        ...styles.badge,
+                        ...getAvailabilityBadgeStyle(currentAnimal.availability),
+                      }}>
+                        {currentAnimal.availability}
+                      </span>
+                    </div>
+
+                    <p style={styles.detail}><strong>Type:</strong> {currentAnimal.type}</p>
+                    <p style={styles.detail}><strong>Breed:</strong> {currentAnimal.breed || 'N/A'}</p>
+                    <p style={styles.detail}><strong>Sex:</strong> {currentAnimal.sex}</p>
+                    <p style={styles.detail}><strong>Size:</strong> {currentAnimal.size || 'N/A'}</p>
+                    <p style={styles.detail}><strong>Age:</strong> {currentAnimal.age || 'N/A'}</p>
+
+                    <p style={{ marginTop: '14px', color: '#555' }}>
+                      {currentAnimal.description || 'No description provided.'}
+                    </p>
+
+                    <div style={styles.actions}>
+                      <button
+                        type="button"
+                        onClick={handleSkip}
+                        aria-label="Skip animal"
+                        style={{
+                          ...styles.swipeButton,
+                          backgroundColor: '#eadfd7',
+                          color: '#8a5a3b',
+                        }}
+                      >
+                        ✕
+                      </button>
+                      <button type="button" onClick={() => handleMessageShelter(currentAnimal)}>
+                        Message Shelter
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleMatch(currentAnimal)}
+                        aria-label="Match with animal"
+                        style={{
+                          ...styles.swipeButton,
+                          backgroundColor: '#dbeadf',
+                          color: '#355e3b',
+                        }}
+                      >
+                        ♥
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-        )}
+            )}
 
-        <p style={styles.footer}>
-          CS Capstone Project - Animal Adoption Matchmaker
-        </p>
+            <p style={{ ...styles.footer, color: '#595959' }}>
+              CS Capstone Project - Animal Adoption Matchmaker
+            </p>
+          </main>
+
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -507,7 +491,7 @@ const styles = {
     fontSize: '14px',
     color: '#2C2C34',
   },
-    filterPill: {
+  filterPill: {
     display: 'inline-block',
     color: '#2C2C34',
     fontSize: '14px',
@@ -564,7 +548,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    color: '#666',
+    color: '#595959',
   },
   cardContent: {
     padding: '24px',
@@ -600,7 +584,6 @@ const styles = {
   footer: {
     textAlign: 'center',
     fontSize: '12px',
-    color: '#999',
     marginTop: '30px',
   },
 };
