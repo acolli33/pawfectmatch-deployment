@@ -201,7 +201,9 @@ router.patch('/threads/:id/read', requireAuth, async (req, res) => {
     const result = await query(
       `
       update messages
-      set read = true
+      set
+        read = true,
+        delivered = true
       where thread_id = $1
         and sender_id != $2
         and read = false
@@ -209,6 +211,7 @@ router.patch('/threads/:id/read', requireAuth, async (req, res) => {
       `,
       [req.params.id, profile.id]
     );
+
 
     return sendSuccess(res, {
       success: true,
@@ -229,6 +232,11 @@ router.patch('/threads/:id/read', requireAuth, async (req, res) => {
 router.patch('/:id/delivered', requireAuth, async (req, res) => {
   try {
     const userContext = await getUserContext(req.user.email);
+
+    if (userContext.error) {
+      return sendError(res, userContext.error, userContext.status);
+    }
+    
     const { profile } = userContext;
 
     const result = await query(
