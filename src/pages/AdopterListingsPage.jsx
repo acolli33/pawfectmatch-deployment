@@ -215,6 +215,7 @@ export default function AdopterListingsPage() {
           'Content-Type': 'application/json',
           'x-demo-email': user.email,
           'x-demo-role': user.role,
+          'x-demo-token': localStorage.getItem('pm_token'),
         },
         body: JSON.stringify({
           animal_id: animal.id,
@@ -257,6 +258,7 @@ export default function AdopterListingsPage() {
         'Content-Type': 'application/json',
         'x-demo-email': user.email,
         'x-demo-role': user.role,
+        'x-demo-token': localStorage.getItem('pm_token'),
       };
 
       const matchResponse = await fetch(`${API_BASE_URL}/api/swipes`, {
@@ -408,7 +410,12 @@ return (
 
                   <div style={styles.cardContent}>
                     <h2 style={{ marginTop: 0, marginBottom: '10px', fontSize: '20px' }}>
-                      {currentAnimal.name}
+                      <Link
+                        to={`/animal-listing-details/${currentAnimal.id}`}
+                        style={{ color: '#2F3A56', textDecoration: 'underline' }}
+                      >
+                        {currentAnimal.name}
+                      </Link>
                     </h2>
 
                     <div style={{ marginBottom: '12px' }}>
@@ -436,9 +443,21 @@ return (
                       >
                         ✕
                       </button>
-                      <button type="button" onClick={() => handleMessageShelter(currentAnimal)}>
+
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/animal-listing-details/${currentAnimal.id}`)}
+                      >
+                        View Details
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleMessageShelter(currentAnimal)}
+                      >
                         Message Shelter
                       </button>
+
                       <button
                         type="button"
                         onClick={() => handleMatch(currentAnimal)}
