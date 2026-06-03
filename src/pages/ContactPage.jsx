@@ -6,6 +6,10 @@ import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "../supabaseClient";
 
+function getDemoToken() {
+  return localStorage.getItem('pm_token') || sessionStorage.getItem('pm_token');
+}
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export default function ContactPage() {
@@ -58,7 +62,7 @@ export default function ContactPage() {
     "Content-Type": "application/json",
     "x-demo-email": user?.email,
     "x-demo-role": user?.role,
-    "x-demo-token": localStorage.getItem("pm_token"),
+    'x-demo-token': getDemoToken(),
   });
 
   const loadThreads = async (showLoading = false) => {
@@ -204,7 +208,7 @@ export default function ContactPage() {
             headers: {
               "x-demo-email": user.email,
               "x-demo-role": user.role,
-              "x-demo-token": localStorage.getItem("pm_token"),
+              'x-demo-token': getDemoToken(),
             },
             cache: "no-store",
           }
@@ -318,7 +322,7 @@ export default function ContactPage() {
               headers: {
                 "x-demo-email": user.email,
                 "x-demo-role": user.role,
-                "x-demo-token": localStorage.getItem("pm_token"),
+                'x-demo-token': getDemoToken(),
               },
               cache: "no-store",
             }

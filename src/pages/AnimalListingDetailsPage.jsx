@@ -4,6 +4,10 @@ import { useAuth } from '../auth/AuthContext.jsx';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
+function getDemoToken() {
+  return localStorage.getItem('pm_token') || sessionStorage.getItem('pm_token');
+}
+
 function getAvailabilityBadgeStyle(status) {
   if (status === 'available') {
     return {
@@ -42,7 +46,7 @@ export default function AnimalListingDetailsPage() {
     'Content-Type': 'application/json',
     'x-demo-email': user?.email,
     'x-demo-role': user?.role,
-    'x-demo-token': localStorage.getItem('pm_token'),
+    'x-demo-token': getDemoToken(),
   };
 
   useEffect(() => {

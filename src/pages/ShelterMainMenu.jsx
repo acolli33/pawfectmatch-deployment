@@ -4,6 +4,10 @@ import { useAuth } from '../auth/AuthContext.jsx';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
+function getDemoToken() {
+  return localStorage.getItem('pm_token') || sessionStorage.getItem('pm_token');
+}
+
 export default function ShelterMainMenu() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -18,7 +22,7 @@ export default function ShelterMainMenu() {
             'Content-Type': 'application/json',
             'x-demo-email': user.email,
             'x-demo-role': user.role,
-            'x-demo-token': localStorage.getItem('pm_token'),
+            'x-demo-token': getDemoToken(),
           },
         });
         const result = await response.json();

@@ -219,7 +219,7 @@ export default function AdopterListingsPage() {
           'Content-Type': 'application/json',
           'x-demo-email': user.email,
           'x-demo-role': user.role,
-          'x-demo-token': localStorage.getItem('pm_token'),
+          'x-demo-token': getDemoToken(),
         },
         body: JSON.stringify({
           animal_id: animal.id,
@@ -262,7 +262,7 @@ export default function AdopterListingsPage() {
         'Content-Type': 'application/json',
         'x-demo-email': user.email,
         'x-demo-role': user.role,
-        'x-demo-token': localStorage.getItem('pm_token'),
+        'x-demo-token': getDemoToken(),
       };
 
       const matchResponse = await fetch(`${API_BASE_URL}/api/swipes`, {

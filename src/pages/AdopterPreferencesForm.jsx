@@ -8,6 +8,9 @@ export default function AdopterPreferencesForm() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  function getDemoToken() {
+  return localStorage.getItem('pm_token') || sessionStorage.getItem('pm_token');
+}
   const [formData, setFormData] = useState({
     animalTypes: [],
     breeds: '',
@@ -49,7 +52,7 @@ export default function AdopterPreferencesForm() {
             'Content-Type': 'application/json',
             'x-demo-email': user.email,
             'x-demo-role': user.role,
-            'x-demo-token': localStorage.getItem('pm_token'),
+            'x-demo-token': getDemoToken(),
           },
         });
         const result = await response.json();
@@ -138,7 +141,7 @@ export default function AdopterPreferencesForm() {
           'Content-Type': 'application/json',
           'x-demo-email': user.email,
           'x-demo-role': user.role,
-          'x-demo-token': localStorage.getItem('pm_token'),
+          'x-demo-token': getDemoToken(),
         },
         body: JSON.stringify(payload),
       });
