@@ -236,7 +236,8 @@ router.post('/', requireAuth, requireRole(['shelter']), async (req, res) => {
         must_be_leashed,
         special_needs,
         availability,
-        primary_photo_url
+        primary_photo_url,
+        adoption_fee
       )
       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14, $15)
       returning *
@@ -369,7 +370,9 @@ router.put('/:id', requireAuth, requireRole(['shelter']), async (req, res) => {
         medicalNotes || '',
         availability || 'available',
         photos?.[0] || null,
-        adoption_fee || null,
+        adoption_fee === '' || adoption_fee === null || adoption_fee === undefined
+          ? null
+          : Number(adoption_fee),
         req.params.id,
       ]
     );
